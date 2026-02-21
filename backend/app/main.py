@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from typing import Dict, Tuple
 from app.core.config import settings
-from app.api import audio, auth
+from app.api import audio, auth, exports
+from app.db.session import SessionLocal
 import time
 from loguru import logger
 import sys
@@ -53,6 +54,7 @@ async def add_security_headers(request: Request, call_next):
 # Routes will be included here
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(audio.router, prefix=f"{settings.API_V1_STR}/audio", tags=["audio"])
+app.include_router(exports.router, prefix=f"{settings.API_V1_STR}/audio", tags=["exports"])
 
 # Basic In-Memory Rate Limiting (IP-based)
 rate_limit_records: Dict[str, Tuple[int, float]] = {}
@@ -132,3 +134,99 @@ def health_check():
         health_status["status"] = "degraded"
         
     return health_status
+
+
+# --- WebSocket: Real-time status streaming ---
+from fastapi import WebSocket, WebSocketDisconnect
+from jose import jwt, JWTError
+import json as json_mod
+
+@app.websocket(f"{settings.API_V1_STR}/audio/ws/{{audio_id}}")
+async def audio_ws(websocket: WebSocket, audio_id: str):
+    """Stream processing status via WebSocket.
+    Auth via query param: ?token=<jwt>
+    Polls Redis task state (not DB) to avoid linear query load.
+    Only hits DB once at connection and once on completion for notes.
+    """
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001)
+        return
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.close(code=4001)
+            return
+    except JWTError:
+        await websocket.close(code=4001)
+        return
+
+    # Ownership check (single DB hit)
+    db = SessionLocal()
+    try:
+        from app.models.domain import AudioFile, Note
+        audio = db.query(AudioFile).filter(AudioFile.id == audio_id).first()
+        if not audio or audio.user_id != int(user_id):
+            await websocket.close(code=4003)
+            return
+    finally:
+        db.close()
+
+    await websocket.accept()
+
+    try:
+        import redis as redis_lib
+        r = redis_lib.from_url("redis://localhost:6379/0")
+        poll_count = 0
+        max_polls = 1200  # 10 min at 500ms intervals
+
+        while poll_count < max_polls:
+            poll_count += 1
+            # Check status from DB (lightweight single-row query)
+            db = SessionLocal()
+            try:
+                audio = db.query(AudioFile).filter(AudioFile.id == audio_id).first()
+                if not audio:
+                    await websocket.send_json({"status": "error", "message": "Not found"})
+                    break
+
+                status = audio.status
+                msg = {"status": status, "poll": poll_count}
+
+                if status == "complete":
+                    notes = db.query(Note).filter(Note.audio_id == audio_id).all()
+                    msg["notes_count"] = len(notes)
+                    msg["processing_time_ms"] = audio.processing_time_ms
+                    msg["notes"] = [
+                        {
+                            "note_name": n.note_name,
+                            "frequency": n.frequency,
+                            "confidence": n.confidence,
+                            "raw_start": n.raw_start,
+                            "raw_end": n.raw_end,
+                        }
+                        for n in notes[:200]  # Cap to prevent payload explosion
+                    ]
+                    await websocket.send_json(msg)
+                    break
+                elif status == "failed":
+                    await websocket.send_json(msg)
+                    break
+                else:
+                    await websocket.send_json(msg)
+            finally:
+                db.close()
+
+            await asyncio.sleep(0.5)
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+    finally:
+        try:
+            await websocket.close()
+        except Exception:
+            pass

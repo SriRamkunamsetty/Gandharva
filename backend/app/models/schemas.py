@@ -31,3 +31,11 @@ class AnalyzeResponse(BaseModel):
     audio_id: str
     job_id: Optional[str] = None
     status: str
+
+class AnalysisDetailResponse(BaseModel):
+    audio_id: str
+    key: Optional[str] = None
+    bpm: Optional[float] = None
+    notes_count: int = 0
+    instrument: Optional[str] = None
+

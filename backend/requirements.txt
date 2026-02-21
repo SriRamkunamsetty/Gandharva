@@ -13,3 +13,4 @@ librosa
 basic-pitch
 python-multipart
 loguru
+reportlab

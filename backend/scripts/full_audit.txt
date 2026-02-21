@@ -1,0 +1,53 @@
+Total audio records: 3
+
+--- Audio: 638d8af7-ed06-4b9a-9a55-67ab005488d7 ---
+  Status: complete
+  File: test_a_short.wav
+  Processing time: 3234ms
+  Instrument: N/A
+  Notes count: 1
+    Note: 69 freq=440.00 conf=0.60 [0.0232-9.9317]
+  Processing Log:
+    Job ID: 6bef9b96-3567-4d06-93b7-63a37ef57544
+    Preprocessing: 47ms
+    Pitch detection: 1866ms
+    Instrument: 0ms
+    Total: 3234ms
+
+--- Audio: b0d8a12c-04d9-497f-b042-7c7ca94268eb ---
+  Status: complete
+  File: test_b_medium.wav
+  Processing time: 3760ms
+  Instrument: N/A
+  Notes count: 6
+    Note: 69 freq=440.00 conf=0.60 [0.0232-29.7976]
+    Note: 69 freq=440.00 conf=0.60 [25.0232-54.7976]
+    Note: 69 freq=440.00 conf=0.60 [50.0232-79.7976]
+    Note: 69 freq=440.00 conf=0.60 [75.0232-104.7976]
+    Note: 69 freq=440.00 conf=0.60 [100.0232-129.7976]
+    ... and 1 more notes
+  Processing Log:
+    Job ID: deffd132-c58d-4de7-a408-0e4b67ea3aab
+    Preprocessing: 81ms
+    Pitch detection: 3673ms
+    Instrument: 0ms
+    Total: 3760ms
+
+--- Audio: e98d56b2-3e6d-4cda-b583-f0b377f2a6ce ---
+  Status: complete
+  File: test_c_long.wav
+  Processing time: 13842ms
+  Instrument: N/A
+  Notes count: 22
+    Note: 69 freq=440.00 conf=0.60 [0.0232-29.7976]
+    Note: 69 freq=440.00 conf=0.60 [25.0232-54.7976]
+    Note: 69 freq=440.00 conf=0.60 [50.0232-79.7976]
+    Note: 69 freq=440.00 conf=0.60 [75.0232-104.7976]
+    Note: 69 freq=440.00 conf=0.60 [100.0232-129.7976]
+    ... and 17 more notes
+  Processing Log:
+    Job ID: eda21894-d3cf-4bf0-b9d6-f19f7ab427ec
+    Preprocessing: 210ms
+    Pitch detection: 13625ms
+    Instrument: 0ms
+    Total: 13842ms

@@ -1,0 +1,10 @@
+Total audio records: 1
+
+--- Audio: 638d8af7-ed06-4b9a-9a55-67ab005488d7 ---
+  Status: complete
+  File: test_a_short.wav
+  Raw path: data/users/1/uploads\638d8af7-ed06-4b9a-9a55-67ab005488d7_test_a_short.wav
+  Notes count: 1
+  Log: job_id=6bef9b96-3567-4d06-93b7-63a37ef57544
+  Total time: 3234ms
+  Pitch time: 1866ms

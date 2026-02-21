@@ -169,14 +169,14 @@ def process_audio_pipeline(self, audio_id: str):
             db_notes = []
             for n in deduplicated_notes:
                 # Basic frequency mapping logic
-                freq = 440.0 * (2.0 ** ((n["midi"] - 69) / 12.0))
+                freq = 440.0 * (2.0 ** ((float(n["midi"]) - 69) / 12.0))
                 db_notes.append(Note(
                     audio_id=audio_id,
-                    note_name=str(n["midi"]), # Temporary MIDI store, update logic for C4 etc later
-                    frequency=freq,
-                    confidence=n["confidence"],
-                    raw_start=round(n["start"], 4),
-                    raw_end=round(n["end"], 4)
+                    note_name=str(int(n["midi"])), # Temporary MIDI store, update logic for C4 etc later
+                    frequency=float(freq),
+                    confidence=float(n["confidence"]),
+                    raw_start=round(float(n["start"]), 4),
+                    raw_end=round(float(n["end"]), 4)
                 ))
             
             pitch_time = int((time.time() - pitch_start) * 1000)
