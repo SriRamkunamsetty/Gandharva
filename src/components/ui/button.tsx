@@ -15,6 +15,9 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        hero: "bg-[image:var(--gradient-button)] text-primary-foreground font-semibold shadow-lg hover:shadow-[var(--shadow-glow-cyan)] transition-all duration-300 hover:scale-105",
+        heroSecondary: "bg-[image:var(--gradient-button-secondary)] text-accent-foreground font-semibold shadow-lg hover:shadow-[var(--shadow-glow-purple)] transition-all duration-300 hover:scale-105",
+        glass: "glass text-foreground hover:bg-[hsl(var(--glass-bg)/0.8)] transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",
