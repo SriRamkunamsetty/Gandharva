@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+sqlalchemy
+alembic
+psycopg2-binary
+celery
+redis
+python-jose[cryptography]
+passlib[bcrypt]
+librosa
+basic-pitch
+python-multipart
+loguru
