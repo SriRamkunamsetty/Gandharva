@@ -5,8 +5,29 @@ class RequestBase(BaseModel):
     model_config = {"extra": "forbid"} # Strict Pydantic parsing: Reject unknown
 
 # -----------------
+# Request Models
+# -----------------
+class UserCreate(RequestBase):
+    email: str
+    password: str
+
+# -----------------
 # Response Models
 # -----------------
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    
+    model_config = {"from_attributes": True}
+
+class AudioFileResponse(BaseModel):
+    id: str
+    status: str
+    original_filename: str
+    created_at: Optional[str] = None
+    processing_time_ms: Optional[int] = None
+    
+    model_config = {"from_attributes": True}
 class NoteInDB(BaseModel):
     note_name: str
     confidence: float

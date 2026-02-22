@@ -19,9 +19,41 @@ services:
     container_name: gandarva_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     restart: always
 
-  # Worker and API will be run locally during dev, but docker-compose manages the infrastructure.
+  # Production configurations
+  api:
+    build: .
+    container_name: gandarva_api
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_SERVER=db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./data:/app/data
+    restart: always
+
+  worker:
+    build: .
+    container_name: gandarva_worker
+    command: celery -A app.workers.celery_app.celery_app worker -P solo --loglevel=info
+    environment:
+      - CELERY_WORKER_CONCURRENCY=1
+      - POSTGRES_SERVER=db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./data:/app/data
+    restart: always
 
 volumes:
   postgres_data:
+  redis_data:

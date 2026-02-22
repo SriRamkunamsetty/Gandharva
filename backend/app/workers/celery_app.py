@@ -1,3 +1,4 @@
+import os
 from celery import Celery
 from app.core.config import settings
 import logging
@@ -5,10 +6,14 @@ import logging
 # Ensure logs use standard output mapped to our severity definitions
 logger = logging.getLogger(__name__)
 
+broker_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+# Swap DB to 1 for backend results automatically
+backend_url = broker_url[:-1] + "1" if broker_url.endswith("/0") else broker_url
+
 celery_app = Celery(
     "gandarva_worker",
-    broker=f"redis://localhost:6379/0",
-    backend=f"redis://localhost:6379/1"
+    broker=broker_url,
+    backend=backend_url
 )
 
 # Apply Hard Resource Constraints from Environment

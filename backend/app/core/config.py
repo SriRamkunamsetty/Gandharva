@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     # Environment
     ENV: Literal["dev", "prod", "test"] = "dev"
     DEVICE: Literal["cpu", "cuda"] = "cpu"
+    LOG_LEVEL: str = "INFO"
     
     # Storage & Limits
     MAX_UPLOAD_MB: int = 50
@@ -19,6 +20,10 @@ class Settings(BaseSettings):
     ENABLE_ML_PIPELINE: bool = True
     CONFIDENCE_MIN: float = 0.5
     CONFIDENCE_MAX: float = 0.8
+    POST_MIN_DURATION: float = 0.04
+    MERGE_GAP: float = 0.05
+    CLUSTER_WINDOW: float = 0.02
+    CLUSTER_RATIO: float = 0.5
     
     # Queue / Workers
     QUEUE_MAX_JOBS: int = 20

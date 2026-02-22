@@ -9,7 +9,21 @@ from app.api.deps import get_current_user
 import uuid
 import magic
 
+from typing import List
+from app.models.schemas import AudioStatusResponse, AnalyzeResponse, AudioFileResponse
+
 router = APIRouter()
+
+@router.get("/", response_model=List[AudioFileResponse])
+async def get_audio_files(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get all audio files for the current user
+    """
+    files = db.query(AudioFile).filter(AudioFile.user_id == current_user.id).all()
+    return files
 
 @router.post("/upload", response_model=AudioStatusResponse)
 async def upload_audio(

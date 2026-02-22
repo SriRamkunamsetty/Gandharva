@@ -14,3 +14,9 @@ basic-pitch
 python-multipart
 loguru
 reportlab
+pretty_midi
+mir_eval
+scikit-learn
+matplotlib
+gunicorn
+python-magic

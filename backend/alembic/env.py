@@ -22,6 +22,9 @@ from app.db.session import Base
 from app.models.domain import User, AudioFile, Note, ProcessingLog
 from app.core.config import settings
 
+# Override alembic.ini sqlalchemy.url with app settings (needed for Docker where POSTGRES_SERVER=db)
+config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

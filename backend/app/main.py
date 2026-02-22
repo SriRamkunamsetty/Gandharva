@@ -12,7 +12,7 @@ import sys
 
 # Configure Loguru
 logger.remove()
-logger.add(sys.stdout, colorize=True, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
+logger.add(sys.stdout, level=settings.LOG_LEVEL, colorize=True, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -122,13 +122,15 @@ def health_check():
     # Check Redis & Worker (mocked check for now, can be expanded)
     try:
         import redis
-        r = redis.from_url("redis://localhost:6379/0")
+        import os
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+        r = redis.from_url(redis_url)
         if r.ping():
             health_status["redis"] = "up"
             # In a real scenario, use celery inspect to ping workers
             health_status["worker"] = "up" # Mocking worker status as up if redis is up and accepting tasks
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"Health check Redis error: {e}")
         
     if "down" in health_status.values():
         health_status["status"] = "degraded"
@@ -178,7 +180,9 @@ async def audio_ws(websocket: WebSocket, audio_id: str):
 
     try:
         import redis as redis_lib
-        r = redis_lib.from_url("redis://localhost:6379/0")
+        import os
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+        r = redis_lib.from_url(redis_url)
         poll_count = 0
         max_polls = 1200  # 10 min at 500ms intervals
 

@@ -7,6 +7,102 @@ import traceback
 import time
 from app.core.config import settings
 from loguru import logger
+from typing import List, Dict
+
+def post_process_notes(notes: List[Dict]) -> List[Dict]:
+    """
+    Applies rigorous heuristics to raw extracted notes to improve transcription quality.
+    """
+    if not notes:
+        return notes
+
+    # 1. Global deduplication (existing +/- 50ms tolerance)
+    tolerance_s = 0.05
+    deduplicated = []
+    for n in notes:
+        is_duplicate = False
+        n_duration = n["end"] - n["start"]
+        for existing in deduplicated:
+            if existing["midi"] == n["midi"]:
+                e_duration = existing["end"] - existing["start"]
+                if (abs(existing["start"] - n["start"]) <= tolerance_s and 
+                    abs(existing["end"] - n["end"]) <= tolerance_s and
+                    abs(e_duration - n_duration) <= tolerance_s):
+                    is_duplicate = True
+                    # Retain max confidence from exact duplicates
+                    existing["confidence"] = max(existing["confidence"], n["confidence"])
+                    break
+        if not is_duplicate:
+            deduplicated.append(n.copy())
+            
+    notes = deduplicated
+
+    # 2. Sort by start time
+    notes.sort(key=lambda x: x["start"])
+
+    # 3. Drop minimum duration notes
+    valid_duration = [n for n in notes if (n["end"] - n["start"]) >= settings.POST_MIN_DURATION]
+    
+    # 4 & 5. Merge adjacent and overlapping same-pitch notes
+    merged_notes = []
+    active_by_pitch = {}
+    
+    for n in valid_duration:
+        pitch = n["midi"]
+        if pitch in active_by_pitch:
+            curr = active_by_pitch[pitch]
+            # Adjacent (gap <= MERGE_GAP) or Overlapping (n.start <= curr.end)
+            if n["start"] <= curr["end"] + settings.MERGE_GAP:
+                # Merge
+                curr["end"] = max(curr["end"], n["end"])
+                curr["confidence"] = max(curr["confidence"], n["confidence"])
+            else:
+                # Gap is > 50ms, flush current and start new
+                merged_notes.append(curr)
+                active_by_pitch[pitch] = n.copy()
+        else:
+            active_by_pitch[pitch] = n.copy()
+            
+    for curr in active_by_pitch.values():
+        merged_notes.append(curr)
+        
+    merged_notes.sort(key=lambda x: x["start"])
+
+    # 6. Polyphonic False Positives (Dynamic Density Filter)
+    poly_filtered = []
+    if not merged_notes:
+        return poly_filtered
+        
+    clusters = []
+    current_cluster = [merged_notes[0]]
+    for n in merged_notes[1:]:
+        # Cluster notes starting within settings.CLUSTER_WINDOW
+        if n["start"] - current_cluster[0]["start"] <= settings.CLUSTER_WINDOW:
+            current_cluster.append(n)
+        else:
+            clusters.append(current_cluster)
+            current_cluster = [n]
+    if current_cluster:
+        clusters.append(current_cluster)
+        
+    for cluster in clusters:
+        if len(cluster) >= 3:
+            max_conf = max(c["confidence"] for c in cluster)
+            # Dynamic threshold ratio
+            threshold = max_conf * settings.CLUSTER_RATIO 
+            
+            # Find the lowest confidence note
+            min_conf = min(c["confidence"] for c in cluster)
+            
+            for c in cluster:
+                # Drop the lowest confidence note ONLY if it is below the dynamic threshold
+                if c["confidence"] == min_conf and c["confidence"] < threshold:
+                    continue # Drop
+                poly_filtered.append(c)
+        else:
+            poly_filtered.extend(cluster)
+
+    return poly_filtered
 
 @shared_task(name="app.workers.tasks.process_audio_pipeline", bind=True)
 def process_audio_pipeline(self, audio_id: str):
@@ -80,27 +176,9 @@ def process_audio_pipeline(self, audio_id: str):
             audio_data, sr = librosa.load(processed_path, sr=16000, mono=True)
             total_duration = librosa.get_duration(y=audio_data, sr=sr)
             
-            # [EXPLICIT OVERLAP MERGE LOGIC]
-            def deduplicate_notes(notes, tolerance_s=0.05):
-                """Deduplicates notes within +/- 50ms tolerance for same midi pitch"""
-                deduplicated = []
-                for n in notes:
-                    is_duplicate = False
-                    n_duration = n["end"] - n["start"]
-                    for existing in deduplicated:
-                        if existing["midi"] == n["midi"]:
-                            e_duration = existing["end"] - existing["start"]
-                            # Check overlapping timeframe and duration
-                            if (abs(existing["start"] - n["start"]) <= tolerance_s and 
-                                abs(existing["end"] - n["end"]) <= tolerance_s and
-                                abs(e_duration - n_duration) <= tolerance_s):
-                                is_duplicate = True
-                                break
-                    if not is_duplicate:
-                        deduplicated.append(n)
-                return deduplicated
-
+            # [EXPLICIT OVERLAP MERGE LOGIC] -> Moved to global post_process_notes
             extracted_notes = []
+            total_windows = 0
             
             if total_duration <= chunk_duration:
                 # Small file, single pass
@@ -139,6 +217,7 @@ def process_audio_pipeline(self, audio_id: str):
                         # Predict Chunk
                         model_output, midi_data, note_events = predict(temp_chunk_path)
                         
+                        total_windows += 1
                         for start_t, end_t, pitch, amplitude, _ in note_events:
                             global_start = offset + start_t
                             global_end = offset + end_t
@@ -160,10 +239,33 @@ def process_audio_pipeline(self, audio_id: str):
                         
                     logger.info(f"Window [{offset:.2f}s - {end_offset:.2f}s] completed in {time.time() - window_start_time:.2f}s, extracted {window_extracted_count} notes")
 
-            # [GLOBAL DEDUPLICATION]
+            # [GLOBAL POST-PROCESSING PIPELINE]
             # Runs ONCE after all windows are merged and timestamps realigned
-            deduplicated_notes = deduplicate_notes(extracted_notes, tolerance_s=0.05)
-            logger.info(f"Extracted {len(extracted_notes)} notes, deduplicated to {len(deduplicated_notes)}")
+            
+            # --- Performance Guard Logging (Pre) ---
+            pre_process_count = len(extracted_notes)
+            
+            deduplicated_notes = post_process_notes(extracted_notes)
+            
+            # --- Performance Guard Logging (Post) ---
+            post_process_count = len(deduplicated_notes)
+            wall_time_ms = int((time.time() - pitch_start) * 1000)
+            
+            # Memory check if available (Linux)
+            import resource
+            try:
+                peak_memory_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+            except Exception:
+                peak_memory_mb = -1.0
+                
+            logger.info("====== PERFORMANCE GUARD ======")
+            logger.info(f"Windows Processed: {total_windows}")
+            logger.info(f"Notes (Raw): {pre_process_count}")
+            logger.info(f"Notes (Post-Processed): {post_process_count}")
+            logger.info(f"Processing Time (ms): {wall_time_ms}")
+            if peak_memory_mb > 0:
+                logger.info(f"Peak Memory (MB): {peak_memory_mb:.2f}")
+            logger.info("===============================")
             
             # Note Quantization mapping placeholder for Phase 3 (Keeping DB schema valid)
             db_notes = []
