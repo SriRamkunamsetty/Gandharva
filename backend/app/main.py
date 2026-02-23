@@ -198,6 +198,16 @@ async def audio_ws(websocket: WebSocket, audio_id: str):
 
                 status = audio.status
                 msg = {"status": status, "poll": poll_count}
+                
+                # Poll Redis for dynamically extracted beat payload from Celery
+                beats_data_raw = r.get(f"beats:{audio_id}")
+                if beats_data_raw:
+                    try:
+                        beats_payload = json_mod.loads(beats_data_raw)
+                        msg["bpm"] = beats_payload.get("bpm")
+                        msg["beats"] = beats_payload.get("beats")
+                    except Exception:
+                        pass
 
                 if status == "complete":
                     notes = db.query(Note).filter(Note.audio_id == audio_id).all()

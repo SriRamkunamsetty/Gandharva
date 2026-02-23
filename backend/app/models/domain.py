@@ -27,6 +27,13 @@ class AudioFile(Base):
     midi_path = Column(String)
     pdf_path = Column(String)
     
+    # Metadata
+    duration = Column(Float, nullable=True)
+    sample_rate = Column(Integer, nullable=True)
+    channels = Column(Integer, nullable=True)
+    file_size = Column(Integer, nullable=True)
+    bit_depth = Column(Integer, nullable=True)
+    
     # Metrics
     processing_time_ms = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -8,6 +8,7 @@ class RequestBase(BaseModel):
 # Request Models
 # -----------------
 class UserCreate(RequestBase):
+    name: Optional[str] = None
     email: str
     password: str
 
@@ -16,6 +17,7 @@ class UserCreate(RequestBase):
 # -----------------
 class UserResponse(BaseModel):
     id: int
+    name: Optional[str] = None
     email: str
     
     model_config = {"from_attributes": True}
@@ -44,6 +46,11 @@ class AudioStatusResponse(BaseModel):
     original_filename: str
     notes: Optional[List[NoteInDB]] = None
     instrument: Optional[str] = None
+    duration: Optional[float] = None
+    sample_rate: Optional[int] = None
+    channels: Optional[int] = None
+    file_size: Optional[int] = None
+    bit_depth: Optional[int] = None
     
     model_config = {"from_attributes": True}
 

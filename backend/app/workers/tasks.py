@@ -126,7 +126,8 @@ def process_audio_pipeline(self, audio_id: str):
         os.makedirs(processed_dir, exist_ok=True)
         processed_path = os.path.join(processed_dir, f"{audio_id}.wav")
         
-        # Security: strictly call ffmpeg on the known raw_path bound to this user
+        # Security & conversion: strictly call ffmpeg on the known raw_path bound to this user.
+        # This implicitly converts browser MediaRecorder WebM/MP4 blobs to 16kHz uncompressed WAV.
         subprocess.run([
             "ffmpeg", "-y", "-i", audio.raw_path, 
             "-ac", "1", "-ar", "16000", processed_path
@@ -176,6 +177,21 @@ def process_audio_pipeline(self, audio_id: str):
             audio_data, sr = librosa.load(processed_path, sr=16000, mono=True)
             total_duration = librosa.get_duration(y=audio_data, sr=sr)
             
+            # --- Beat & Tempo Extraction Pipeline ---
+            logger.info("Extracting beat & tempo metrics")
+            import json
+            import redis as redis_lib
+            try:
+                tempo, beat_frames = librosa.beat.beat_track(y=audio_data, sr=sr)
+                bpm = float(tempo[0] if isinstance(tempo, np.ndarray) else tempo)
+                beat_times = librosa.frames_to_time(beat_frames, sr=sr).tolist()
+                
+                # Push lightweight beats mapping to Redis for WebSocket real-time polling stream
+                r = redis_lib.from_url(settings.REDIS_URL)
+                r.set(f"beats:{audio_id}", json.dumps({"bpm": bpm, "beats": beat_times}), ex=86400)
+            except Exception as e:
+                logger.error(f"Failed to infer beat_track: {e}")
+                
             # [EXPLICIT OVERLAP MERGE LOGIC] -> Moved to global post_process_notes
             extracted_notes = []
             total_windows = 0
