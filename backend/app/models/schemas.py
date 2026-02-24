@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from datetime import datetime
 
 class RequestBase(BaseModel):
     model_config = {"extra": "forbid"} # Strict Pydantic parsing: Reject unknown
@@ -26,8 +27,9 @@ class AudioFileResponse(BaseModel):
     id: str
     status: str
     original_filename: str
-    created_at: Optional[str] = None
+    created_at: Optional[datetime] = None
     processing_time_ms: Optional[int] = None
+    notes: Optional[List[NoteInDB]] = None
     
     model_config = {"from_attributes": True}
 class NoteInDB(BaseModel):

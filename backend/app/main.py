@@ -20,10 +20,13 @@ app = FastAPI(
     docs_url=f"{settings.API_V1_STR}/docs",
 )
 
+from app.core.firebase import db
+
 # CORS
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://*.netlify.app",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +34,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Global Error Handler

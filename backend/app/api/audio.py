@@ -1,18 +1,7 @@
-import os
-import uuid
-import magic
-import subprocess
-import json
-from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status, Request, BackgroundTasks
-from fastapi.responses import FileResponse, JSONResponse
-from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.models.domain import AudioFile, User
-from app.models.schemas import AudioStatusResponse, AnalyzeResponse, AudioFileResponse
-from app.core.config import settings
-from app.api.deps import get_current_user
-from app.services.audio_vis import generate_waveform_peaks, generate_spectrogram_png
-from typing import List
+from app.core.firebase import db
+import requests
+import tempfile
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -25,6 +14,10 @@ async def get_audio_files(
     Get all audio files for the current user
     """
     files = db.query(AudioFile).filter(AudioFile.user_id == current_user.id).all()
+    # For the library preview, we'll slice the notes to avoid payload bloat
+    for f in files:
+        if f.notes:
+            f.notes = f.notes[:50] # Take first 50 for thumbnail
     return files
 
 def get_audio_metadata(file_path: str):
@@ -91,6 +84,21 @@ async def upload_audio(
     db.commit()
     db.refresh(audio_record)
     
+    # Update Firestore as requested
+    if db:
+        try:
+            track_ref = db.collection("tracks").document(audio_id)
+            track_ref.set({
+                "id": audio_id,
+                "filename": file.filename,
+                "status": "uploaded",
+                "duration": duration,
+                "user_id": current_user.id,
+                "created_at": firestore.SERVER_TIMESTAMP
+            })
+        except Exception as e:
+            logger.error(f"Firestore save error: {e}")
+    
     # 3. Dispatch heavy visual processing to FastAPI BackgroundTasks (non-blocking)
     background_tasks.add_task(generate_waveform_peaks, file_path, waveform_path)
     background_tasks.add_task(generate_spectrogram_png, file_path, spectrogram_path)
@@ -132,39 +140,61 @@ async def get_spectrogram(
     return FileResponse(spectrogram_path, media_type="image/png")
 
 
-@router.post("/analyze/{audio_id}", response_model=AnalyzeResponse)
-async def analyze_audio(
-    audio_id: str,
-    db: Session = Depends(get_db),
+@router.post("/analyze", response_model=AnalyzeResponse)
+async def analyze_audio_url(
+    payload: dict,
+    db_session: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    audio = db.query(AudioFile).filter(AudioFile.id == audio_id).first()
+    """
+    Accepts a firebase audio_url, downloads it temporarily, and starts analysis.
+    """
+    audio_url = payload.get("audio_url")
+    if not audio_url:
+        raise HTTPException(status_code=400, detail="Missing audio_url")
     
-    # Ownership Control Guard
-    if not audio or audio.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Forbidden or Not Found")
-        
-    # Idempotency Protection
-    if audio.status == "complete":
-        return AnalyzeResponse(message="Already processed", audio_id=audio_id, status="complete")
-        
-    # Concurrency Lock
-    if audio.status == "processing":
-        raise HTTPException(status_code=409, detail="Analysis already in progress for this file.")
-        
-    # Atomic Pre-Dispatch Guard: Lock processing state BEFORE queuing
+    audio_id = str(uuid.uuid4())
+    
+    # Create record in Firestore first
+    if db:
+        db.collection("tracks").document(audio_id).set({
+            "id": audio_id,
+            "url": audio_url,
+            "user_id": current_user.id,
+            "status": "processing",
+            "created_at": firestore.SERVER_TIMESTAMP
+        })
+
+    # Download file to temp path for processing
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    temp_path = temp_file.name
+    temp_file.close()
+
     try:
-        audio.status = "processing"
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to initialize processing state securely.")
+        response = requests.get(audio_url, stream=True)
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to download audio from URL")
         
-    # Now dispatch task safely
-    from app.workers.celery_app import celery_app
-    task = celery_app.send_task("app.workers.tasks.process_audio_pipeline", args=[audio_id])
+        with open(temp_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # 3. Dispatch to Celery (Needs update to handle temp_path or we download in worker?)
+        # For Hugging Face, we'll download in the worker to keep web server fast.
+        from app.workers.celery_app import celery_app
+        task = celery_app.send_task("app.workers.tasks.process_audio_pipeline_url", args=[audio_id, audio_url])
+        
+        return AnalyzeResponse(message="Dispatched", audio_id=audio_id, job_id=task.id, status="processing")
     
-    return AnalyzeResponse(message="Dispatched", audio_id=audio_id, job_id=task.id, status="processing")
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise HTTPException(status_code=500, detail=f"Analysis dispatch failed: {e}")
+    finally:
+        # Note: In a real worker, cleanup happens there. 
+        # Here we just clean up the web server's temp download if any.
+        if os.path.exists(temp_path):
+             os.remove(temp_path)
 
 @router.get("/status/{audio_id}", response_model=AudioStatusResponse)
 async def get_status(

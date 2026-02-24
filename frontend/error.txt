@@ -1,0 +1,299 @@
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+[1m[33mwarn[39m[22m - No utility classes were detected in your source files. If this is unexpected, double-check the `content` option in your Tailwind CSS configuration.
+[1m[33mwarn[39m[22m - https://tailwindcss.com/docs/content-configuration
+CssSyntaxError: tailwindcss: D:\Gandrava\frontend\src\app\globals.css:1:1: The `bg-background` class does not exist. If `bg-background` is a custom class, make sure it is defined within a `@layer` directive.
+    at Input.error (D:\Gandrava\frontend\node_modules\postcss\lib\input.js:135:16)
+    at AtRule.error (D:\Gandrava\frontend\node_modules\postcss\lib\node.js:146:32)
+    at processApply (D:\Gandrava\frontend\node_modules\tailwindcss\lib\lib\expandApplyAtRules.js:380:29)
+    at D:\Gandrava\frontend\node_modules\tailwindcss\lib\lib\expandApplyAtRules.js:551:9
+    at D:\Gandrava\frontend\node_modules\tailwindcss\lib\processTailwindFeatures.js:55:50
+    at async Object.Once (D:\Gandrava\frontend\node_modules\tailwindcss\lib\cli\build\plugin.js:248:17)
+    at async LazyResult.runAsync (D:\Gandrava\frontend\node_modules\postcss\lib\lazy-result.js:293:11)
+    at async build (D:\Gandrava\frontend\node_modules\tailwindcss\lib\cli\build\index.js:49:9) {
+  reason: 'The `bg-background` class does not exist. If `bg-background` is a custom class, make sure it is defined within a `@layer` directive.',
+  file: 'D:\\Gandrava\\frontend\\src\\app\\globals.css',
+  source: '@tailwind base;\r\n' +
+    '@tailwind components;\r\n' +
+    '@tailwind utilities;\r\n' +
+    '\r\n' +
+    '@layer base {\r\n' +
+    '  :root {\r\n' +
+    '    --border: 250 20% 18%;\r\n' +
+    '    --input: 250 20% 18%;\r\n' +
+    '    --ring: 180 100% 50%;\r\n' +
+    '    --radius: 0.75rem;\r\n' +
+    '\r\n' +
+    '    /* Custom tokens for glassmorphism and glows */\r\n' +
+    '    --shadow-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 60px rgba(0, 229, 255, 0.1);\r\n' +
+    '    --shadow-glow-purple: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);\r\n' +
+    '    --gradient-hero: linear-gradient(135deg, #0A0A1A, #05050A);\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '@layer base {\r\n' +
+    '  * {\r\n' +
+    '    border-color: hsl(var(--border));\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  body {\r\n' +
+    '    @apply bg-background text-foreground;\r\n' +
+    '    font-family: var(--font-body);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  h1,\r\n' +
+    '  h2,\r\n' +
+    '  h3,\r\n' +
+    '  h4,\r\n' +
+    '  h5,\r\n' +
+    '  h6 {\r\n' +
+    '    font-family: var(--font-display);\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '/* Glassmorphism utility */\r\n' +
+    '@layer components {\r\n' +
+    '  .glass {\r\n' +
+    '    background: hsl(var(--glass-bg) / 0.6);\r\n' +
+    '    backdrop-filter: blur(16px);\r\n' +
+    '    border: 1px solid hsl(var(--glass-border) / 0.3);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .glass-strong {\r\n' +
+    '    background: hsl(var(--glass-bg) / 0.8);\r\n' +
+    '    backdrop-filter: blur(24px);\r\n' +
+    '    border: 1px solid hsl(var(--glass-border) / 0.4);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .glow-cyan {\r\n' +
+    '    box-shadow: var(--shadow-glow-cyan);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .glow-purple {\r\n' +
+    '    box-shadow: var(--shadow-glow-purple);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .text-gradient {\r\n' +
+    '    background: var(--gradient-accent);\r\n' +
+    '    -webkit-background-clip: text;\r\n' +
+    '    -webkit-text-fill-color: transparent;\r\n' +
+    '    background-clip: text;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .gradient-hero {\r\n' +
+    '    background: var(--gradient-hero);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  .gradient-card {\r\n' +
+    '    background: var(--gradient-card);\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '/* Animations */\r\n' +
+    '@keyframes float {\r\n' +
+    '\r\n' +
+    '  0%,\r\n' +
+    '  100% {\r\n' +
+    '    transform: translateY(0px);\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  50% {\r\n' +
+    '    transform: translateY(-20px);\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '@keyframes pulse-glow {\r\n' +
+    '\r\n' +
+    '  0%,\r\n' +
+    '  100% {\r\n' +
+    '    opacity: 0.4;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  50% {\r\n' +
+    '    opacity: 1;\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '@keyframes equalizer {\r\n' +
+    '\r\n' +
+    '  0%,\r\n' +
+    '  100% {\r\n' +
+    '    height: 10%;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  50% {\r\n' +
+    '    height: 100%;\r\n' +
+    '  }\r\n' +
+    '}\r\n' +
+    '\r\n' +
+    '@keyframes particle-float {\r\n' +
+    '  0% {\r\n' +
+    '    transform: translateY(100vh) rotate(0deg);\r\n' +
+    '    opacity: 0;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  10% {\r\n' +
+    '    opacity: 1;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  90% {\r\n' +
+    '    opacity: 1;\r\n' +
+    '  }\r\n' +
+    '\r\n' +
+    '  100% {\r\n' +
+    '    transform: translateY(-10vh) rotate(720deg);\r\n' +
+    '    opacity: 0;\r\n' +
+    '  }\r\n' +
+    '}',
+  line: 1,
+  column: 1,
+  endLine: 1,
+  endColumn: 16,
+  input: {
+    column: 1,
+    endColumn: 16,
+    endLine: 1,
+    endOffset: 15,
+    line: 1,
+    offset: 0,
+    source: '@tailwind base;\r\n' +
+      '@tailwind components;\r\n' +
+      '@tailwind utilities;\r\n' +
+      '\r\n' +
+      '@layer base {\r\n' +
+      '  :root {\r\n' +
+      '    --border: 250 20% 18%;\r\n' +
+      '    --input: 250 20% 18%;\r\n' +
+      '    --ring: 180 100% 50%;\r\n' +
+      '    --radius: 0.75rem;\r\n' +
+      '\r\n' +
+      '    /* Custom tokens for glassmorphism and glows */\r\n' +
+      '    --shadow-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 60px rgba(0, 229, 255, 0.1);\r\n' +
+      '    --shadow-glow-purple: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);\r\n' +
+      '    --gradient-hero: linear-gradient(135deg, #0A0A1A, #05050A);\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '@layer base {\r\n' +
+      '  * {\r\n' +
+      '    border-color: hsl(var(--border));\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  body {\r\n' +
+      '    @apply bg-background text-foreground;\r\n' +
+      '    font-family: var(--font-body);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  h1,\r\n' +
+      '  h2,\r\n' +
+      '  h3,\r\n' +
+      '  h4,\r\n' +
+      '  h5,\r\n' +
+      '  h6 {\r\n' +
+      '    font-family: var(--font-display);\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '/* Glassmorphism utility */\r\n' +
+      '@layer components {\r\n' +
+      '  .glass {\r\n' +
+      '    background: hsl(var(--glass-bg) / 0.6);\r\n' +
+      '    backdrop-filter: blur(16px);\r\n' +
+      '    border: 1px solid hsl(var(--glass-border) / 0.3);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .glass-strong {\r\n' +
+      '    background: hsl(var(--glass-bg) / 0.8);\r\n' +
+      '    backdrop-filter: blur(24px);\r\n' +
+      '    border: 1px solid hsl(var(--glass-border) / 0.4);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .glow-cyan {\r\n' +
+      '    box-shadow: var(--shadow-glow-cyan);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .glow-purple {\r\n' +
+      '    box-shadow: var(--shadow-glow-purple);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .text-gradient {\r\n' +
+      '    background: var(--gradient-accent);\r\n' +
+      '    -webkit-background-clip: text;\r\n' +
+      '    -webkit-text-fill-color: transparent;\r\n' +
+      '    background-clip: text;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .gradient-hero {\r\n' +
+      '    background: var(--gradient-hero);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  .gradient-card {\r\n' +
+      '    background: var(--gradient-card);\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '/* Animations */\r\n' +
+      '@keyframes float {\r\n' +
+      '\r\n' +
+      '  0%,\r\n' +
+      '  100% {\r\n' +
+      '    transform: translateY(0px);\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  50% {\r\n' +
+      '    transform: translateY(-20px);\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '@keyframes pulse-glow {\r\n' +
+      '\r\n' +
+      '  0%,\r\n' +
+      '  100% {\r\n' +
+      '    opacity: 0.4;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  50% {\r\n' +
+      '    opacity: 1;\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '@keyframes equalizer {\r\n' +
+      '\r\n' +
+      '  0%,\r\n' +
+      '  100% {\r\n' +
+      '    height: 10%;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  50% {\r\n' +
+      '    height: 100%;\r\n' +
+      '  }\r\n' +
+      '}\r\n' +
+      '\r\n' +
+      '@keyframes particle-float {\r\n' +
+      '  0% {\r\n' +
+      '    transform: translateY(100vh) rotate(0deg);\r\n' +
+      '    opacity: 0;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  10% {\r\n' +
+      '    opacity: 1;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  90% {\r\n' +
+      '    opacity: 1;\r\n' +
+      '  }\r\n' +
+      '\r\n' +
+      '  100% {\r\n' +
+      '    transform: translateY(-10vh) rotate(720deg);\r\n' +
+      '    opacity: 0;\r\n' +
+      '  }\r\n' +
+      '}',
+    url: 'file:///D:/Gandrava/frontend/src/app/globals.css',
+    file: 'D:\\Gandrava\\frontend\\src\\app\\globals.css'
+  },
+  plugin: 'tailwindcss'
+}

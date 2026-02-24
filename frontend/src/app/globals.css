@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250 30% 6%;
+    --foreground: 220 20% 92%;
+
+    --card: 250 25% 10%;
+    --card-foreground: 220 20% 92%;
+
+    --popover: 250 25% 10%;
+    --popover-foreground: 220 20% 92%;
+
+    --primary: 180 100% 50%;
+    --primary-foreground: 250 30% 6%;
+
+    --secondary: 270 40% 25%;
+    --secondary-foreground: 220 20% 92%;
+
+    --muted: 250 20% 15%;
+    --muted-foreground: 220 15% 55%;
+
+    --accent: 270 60% 50%;
+    --accent-foreground: 220 20% 95%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 220 20% 95%;
+
+    --border: 250 20% 18%;
+    --input: 250 20% 18%;
+    --ring: 180 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --neon-cyan: 180 100% 50%;
+    --deep-purple: 270 60% 12%;
+    --midnight-blue: 230 50% 15%;
+    --violet-glow: 270 80% 60%;
+    --glass-bg: 250 25% 12%;
+    --glass-border: 250 20% 22%;
+
+    /* Sonic Entry tokens */
+    --neon-purple: 270 100% 65%;
+    --neon-blue: 210 100% 60%;
+    --neon-pink: 320 100% 60%;
+    --cosmic-deep: 240 30% 8%;
+    --cosmic-mid: 250 25% 12%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(270 60% 12%), hsl(230 50% 15%), hsl(250 30% 6%));
+    --gradient-accent: linear-gradient(135deg, hsl(270 80% 60%), hsl(180 100% 50%));
+    --gradient-card: linear-gradient(145deg, hsl(250 25% 12% / 0.8), hsl(230 50% 15% / 0.4));
+    --gradient-button: linear-gradient(135deg, hsl(180 100% 50%), hsl(200 100% 50%));
+    --gradient-cosmic: linear-gradient(135deg, hsl(240 30% 8%), hsl(260 35% 15%), hsl(220 40% 12%));
+    --gradient-neon: linear-gradient(135deg, hsl(270 100% 65%), hsl(210 100% 60%));
+    --gradient-button-secondary: linear-gradient(135deg, hsl(270 60% 50%), hsl(280 80% 60%));
+
+    --shadow-glow-cyan: 0 0 20px hsl(180 100% 50% / 0.3), 0 0 60px hsl(180 100% 50% / 0.1);
+    --shadow-glow-purple: 0 0 20px hsl(270 80% 60% / 0.3), 0 0 60px hsl(270 80% 60% / 0.1);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.4);
+
+    --sidebar-background: 250 30% 8%;
+    --sidebar-foreground: 220 20% 85%;
+    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary-foreground: 250 30% 6%;
+    --sidebar-accent: 270 40% 20%;
+    --sidebar-accent-foreground: 220 20% 92%;
+    --sidebar-border: 250 20% 18%;
+    --sidebar-ring: 180 100% 50%;
+
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Dim Violet - Used for low-confidence notes and background grids */
+    --color-dim-violet-h: 280;
+    --color-dim-violet-s: 50%;
+    --color-dim-violet-l: 25%;
+    --color-dim-violet: hsl(var(--color-dim-violet-h) var(--color-dim-violet-s) var(--color-dim-violet-l));
+
+    /* Neon Cyan - Used for high-confidence notes, waveforms, and live FFT */
+    --color-neon-cyan-h: 180;
+    --color-neon-cyan-s: 100%;
+    --color-neon-cyan-l: 50%;
+    --color-neon-cyan: hsl(var(--color-neon-cyan-h) var(--color-neon-cyan-s) var(--color-neon-cyan-l));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* Glassmorphism utilities */
+@layer components {
+  .glass {
+    background: hsl(var(--glass-bg) / 0.6);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--glass-border) / 0.3);
+  }
+
+  .glass-strong {
+    background: hsl(var(--glass-bg) / 0.8);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--glass-border) / 0.4);
+  }
+
+  .glow-cyan {
+    box-shadow: var(--shadow-glow-cyan);
+  }
+
+  .glow-purple {
+    box-shadow: var(--shadow-glow-purple);
+  }
+
+  .text-gradient {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  /* Sonic Entry auth components */
+  .glass-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: hsl(var(--glass-bg) / 0.6);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--glass-border) / 0.3);
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.4);
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    pointer-events: none;
+    background: linear-gradient(135deg, hsl(var(--neon-purple) / 0.08), transparent 60%);
+  }
+
+  .neon-glow {
+    text-shadow: 0 0 10px hsl(var(--neon-purple) / 0.6),
+      0 0 30px hsl(var(--neon-purple) / 0.3),
+      0 0 60px hsl(var(--neon-purple) / 0.15);
+  }
+
+  .neon-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid hsl(var(--muted-foreground) / 0.3);
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    color: hsl(var(--foreground));
+  }
+
+  .neon-input:focus {
+    border-color: hsl(var(--neon-blue));
+    box-shadow: 0 2px 12px hsl(var(--neon-blue) / 0.3);
+  }
+
+  .neon-input::placeholder {
+    color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  .btn-studio {
+    position: relative;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    background: var(--gradient-neon);
+    color: white;
+    box-shadow: 0 0 20px hsl(var(--neon-purple) / 0.3), 0 0 60px hsl(var(--neon-purple) / 0.1);
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-studio:hover {
+    box-shadow: 0 0 30px hsl(var(--neon-purple) / 0.5), 0 0 80px hsl(var(--neon-purple) / 0.2);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary-studio {
+    position: relative;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    background: transparent;
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--glass-border) / 0.5);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .btn-secondary-studio:hover {
+    border-color: hsl(var(--neon-blue));
+    box-shadow: 0 0 20px hsl(var(--neon-blue) / 0.3), 0 0 60px hsl(var(--neon-blue) / 0.1);
+  }
+
+  .equalizer-bar {
+    border-radius: 9999px;
+    background: var(--gradient-neon);
+    animation: equalize var(--duration, 1s) ease-in-out infinite alternate;
+  }
+}
+
+/* Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes equalizer {
+
+  0%,
+  100% {
+    height: 10%;
+  }
+
+  50% {
+    height: 100%;
+  }
+}
+
+@keyframes equalize {
+  0% {
+    height: var(--min-h, 8px);
+  }
+
+  100% {
+    height: var(--max-h, 28px);
+  }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-10vh) rotate(720deg);
+    opacity: 0;
+  }
+}
