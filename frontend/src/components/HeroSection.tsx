@@ -1,11 +1,12 @@
+"use client";
 import { motion } from "framer-motion";
 import { Upload, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedWaveformBg, MusicParticles, EqualizerBars } from "@/components/AnimatedBackground";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
@@ -42,7 +43,7 @@ const HeroSection = () => {
               variant="hero"
               size="lg"
               className="text-base px-8 py-6"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => router.push("/dashboard")}
             >
               <Upload className="mr-2 h-5 w-5" />
               Upload Audio
@@ -51,7 +52,7 @@ const HeroSection = () => {
               variant="heroSecondary"
               size="lg"
               className="text-base px-8 py-6"
-              onClick={() => navigate("/dashboard?mode=record")}
+              onClick={() => router.push("/dashboard?mode=record")}
             >
               <Mic className="mr-2 h-5 w-5" />
               Start Live Recording
