@@ -1,7 +1,22 @@
-from app.core.firebase import db
+import os
+import uuid
+import json
+import subprocess
+import magic
 import requests
 import tempfile
 from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks
+from fastapi.responses import JSONResponse, FileResponse
+from sqlalchemy.orm import Session
+from loguru import logger
+from firebase_admin import firestore
+from app.api.deps import get_current_user
+from app.db.session import get_db
+from app.models.domain import AudioFile, User
+from app.models.schemas import AudioFileResponse, AudioStatusResponse, AnalyzeResponse
+from app.services.audio_vis import generate_waveform_peaks, generate_spectrogram_png
+from app.core.firebase import db
 
 router = APIRouter()
 

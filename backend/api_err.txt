@@ -1,8 +1,0 @@
-[2026-02-22 01:42:49 +0000] [1] [INFO] Starting gunicorn 25.1.0
-[2026-02-22 01:42:49 +0000] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
-[2026-02-22 01:42:49 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
-[2026-02-22 01:42:49 +0000] [1] [INFO] Control socket listening at /app/gunicorn.ctl
-[2026-02-22 01:42:49 +0000] [8] [INFO] Booting worker with pid: 8
-[2026-02-22 01:42:50 +0000] [8] [INFO] Started server process [8]
-[2026-02-22 01:42:50 +0000] [8] [INFO] Waiting for application startup.
-[2026-02-22 01:42:50 +0000] [8] [INFO] Application startup complete.

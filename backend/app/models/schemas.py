@@ -23,15 +23,6 @@ class UserResponse(BaseModel):
     
     model_config = {"from_attributes": True}
 
-class AudioFileResponse(BaseModel):
-    id: str
-    status: str
-    original_filename: str
-    created_at: Optional[datetime] = None
-    processing_time_ms: Optional[int] = None
-    notes: Optional[List[NoteInDB]] = None
-    
-    model_config = {"from_attributes": True}
 class NoteInDB(BaseModel):
     note_name: str
     confidence: float
@@ -39,6 +30,16 @@ class NoteInDB(BaseModel):
     raw_end: float
     quantized_start: Optional[float]
     quantized_end: Optional[float]
+    
+    model_config = {"from_attributes": True}
+
+class AudioFileResponse(BaseModel):
+    id: str
+    status: str
+    original_filename: str
+    created_at: Optional[datetime] = None
+    processing_time_ms: Optional[int] = None
+    notes: Optional[List[NoteInDB]] = None
     
     model_config = {"from_attributes": True}
 

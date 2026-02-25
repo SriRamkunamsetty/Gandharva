@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Music, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { BASE_API_URL } from "@/lib/api";
+import Logo from "@/components/common/Logo";
 import Link from "next/link";
 
 // --- Inline Background Components (from gandharva-sonic-entry) ---
@@ -147,7 +149,7 @@ export default function RegisterPage() {
     const { login } = useAuth();
     const router = useRouter();
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+    const API_URL = BASE_API_URL;
 
     const validate = () => {
         const newErrors: { name?: string; email?: string; password?: string } = {};
@@ -222,7 +224,7 @@ export default function RegisterPage() {
                 >
                     {/* Header */}
                     <div className="flex flex-col items-center mb-8">
-                        <AuthEqualizer count={9} className="mb-4" />
+                        <Logo width={80} height={80} className="mb-4" />
                         <h2 className="text-2xl md:text-3xl font-bold tracking-wider text-foreground neon-glow font-display">
                             Join Gandharva
                         </h2>

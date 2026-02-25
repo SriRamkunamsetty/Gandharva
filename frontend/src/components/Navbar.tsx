@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Activity, LogOut } from "lucide-react";
 
 export default function Navbar() {
     const { isAuthenticated, logout } = useAuth();
@@ -12,7 +11,7 @@ export default function Navbar() {
         <nav className="fixed top-0 w-full z-50 glass-strong border-b border-border">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 group">
-                    <Activity className="w-6 h-6 text-primary group-hover:animate-pulse" />
+                    <Logo width={32} height={32} />
                     <span className="font-display font-bold text-xl tracking-wider text-foreground">GANDARVA</span>
                 </Link>
 

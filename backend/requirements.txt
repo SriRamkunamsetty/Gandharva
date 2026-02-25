@@ -1,3 +1,4 @@
+gradio
 fastapi
 uvicorn
 pydantic
@@ -22,3 +23,7 @@ gunicorn
 python-magic
 firebase-admin
 requests
+torch
+soundfile
+setuptools
+wheel
