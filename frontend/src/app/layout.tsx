@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "Gandarva | AI Music Transcription",
   description: "Turn Sound Into Sheet Music",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

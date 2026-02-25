@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Music, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { BASE_API_URL } from "@/lib/api";
+import api, { BASE_API_URL } from "@/lib/api";
 import Logo from "@/components/common/Logo";
 import Link from "next/link";
 
@@ -168,40 +168,25 @@ export default function RegisterPage() {
 
         try {
             // 1. Register User via JSON
-            const regResp = await fetch(`${API_URL}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password }),
-            });
-
-            if (!regResp.ok) {
-                const data = await regResp.json().catch(() => ({}));
-                setErrors({ general: data.detail || "Registration failed. User might exist." });
-                setShake(true); setTimeout(() => setShake(false), 500);
-                setLoading(false);
-                return;
-            }
+            await api.post("/auth/register", { name, email, password });
 
             // 2. Auto-login after successful registration
-            const loginResp = await fetch(`${API_URL}/auth/login/access-token`, {
-                method: "POST",
+            const formData = new URLSearchParams();
+            formData.append("username", email);
+            formData.append("password", password);
+
+            const loginResp = await api.post("/auth/login/access-token", formData, {
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
             });
 
-            if (!loginResp.ok) {
-                // Fallback: send to login
-                router.push("/login?registered=true");
-                return;
-            }
-
-            const data = await loginResp.json();
-            login(data.access_token, data.user);
+            login(loginResp.data.access_token, loginResp.data.user);
             router.push("/dashboard");
 
-        } catch {
-            setErrors({ general: "Connection failed. Is the backend running?" });
-            setShake(true); setTimeout(() => setShake(false), 500);
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || "Registration failed. User might exist.";
+            setErrors({ general: detail });
+            setShake(true);
+            setTimeout(() => setShake(false), 500);
             setLoading(false);
         }
     };

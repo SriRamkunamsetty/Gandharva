@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Music } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { BASE_API_URL } from "@/lib/api";
+import api, { BASE_API_URL } from "@/lib/api";
 import Logo from "@/components/common/Logo";
 import Link from "next/link";
 
@@ -166,26 +166,21 @@ export default function LoginPage() {
         setErrors({});
 
         try {
-            const resp = await fetch(`${API_URL}/auth/login/access-token`, {
-                method: "POST",
+            const formData = new URLSearchParams();
+            formData.append("username", email);
+            formData.append("password", password);
+
+            const resp = await api.post("/auth/login/access-token", formData, {
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
             });
 
-            if (!resp.ok) {
-                const data = await resp.json().catch(() => ({}));
-                setErrors({ general: data.detail || "Invalid credentials" });
-                setShake(true); setTimeout(() => setShake(false), 500);
-                setLoading(false);
-                return;
-            }
-
-            const data = await resp.json();
-            login(data.access_token, data.user);
+            login(resp.data.access_token, resp.data.user);
             router.push("/dashboard");
-        } catch {
-            setErrors({ general: "Connection failed. Is the backend running?" });
-            setShake(true); setTimeout(() => setShake(false), 500);
+        } catch (err: any) {
+            const detail = err.response?.data?.detail || "Invalid credentials";
+            setErrors({ general: detail });
+            setShake(true);
+            setTimeout(() => setShake(false), 500);
             setLoading(false);
         }
     };
