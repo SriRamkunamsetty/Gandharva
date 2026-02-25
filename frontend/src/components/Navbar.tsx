@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import Logo from "@/components/common/Logo";
 
 export default function Navbar() {
     const { isAuthenticated, logout } = useAuth();
