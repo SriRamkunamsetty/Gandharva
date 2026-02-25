@@ -23,11 +23,12 @@ def initialize_firebase():
             if service_account_str.startswith("'") and service_account_str.endswith("'"):
                 service_account_str = service_account_str[1:-1]
 
-            # 2. Fix unquoted keys (e.g., type: -> "type":)
+            # 2. Denoiser++: Robust regex for unquoted keys 
+            # Wraps keys (like project_id: ) in double quotes if they aren't already.
             import re
-            # Regex to find: word followed by colon, not preceded by quote
-            # This is a basic fix for unquoted keys often seen in manual attempts
-            service_account_str = re.sub(r'(?<!")(\b\w+\b)(?=:)', r'"\1"', service_account_str)
+            # Matches a word boundary, alphanumeric key, optional whitespace, followed by a colon
+            # Ensure we don't double-quote already quoted keys
+            service_account_str = re.sub(r'(?<!")\b([a-zA-Z0-9_-]+)\b\s*:', r'"\1":', service_account_str)
 
             # Parse the JSON string
             try:

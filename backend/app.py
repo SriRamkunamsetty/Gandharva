@@ -59,14 +59,13 @@ with gr.Blocks(title="Gandharva API Service") as demo:
     gr.Markdown(f"**API Base**: `/api/v1`")
 
 if __name__ == "__main__":
-    # Mount FastAPI to Gradio using mount_gradio_app
     from fastapi import FastAPI
     from app.main import app as fastapi_app
     import uvicorn
     
-    # Hugging Face Gradio spaces look for demo.launch or app = gr.mount_gradio_app(...)
-    # To keep the dashboard and expose the API:
+    # Prioritize FastAPI: Mount Gradio onto the existing FastAPI app
+    # This ensures FastAPI handles /api/v1 first before falling through to Gradio
     app = gr.mount_gradio_app(fastapi_app, demo, path="/")
     
-    # Start the integrated server
+    # Start uvicorn with the prioritized FastAPI app
     uvicorn.run(app, host="0.0.0.0", port=7860)
