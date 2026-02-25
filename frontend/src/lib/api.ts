@@ -1,7 +1,10 @@
 import axios from "axios";
 
 // Standardize the API URL for all frontend services
-export const BASE_API_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1`;
+const envUrl = process.env.NEXT_PUBLIC_API_URL;
+export const BASE_API_URL = envUrl
+    ? `${envUrl.replace(/\/$/, "")}/api/v1`
+    : "http://localhost:8000/api/v1";
 
 const api = axios.create({
     baseURL: BASE_API_URL,
