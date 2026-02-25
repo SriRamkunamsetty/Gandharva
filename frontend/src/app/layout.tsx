@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Gandarva | AI Music Transcription",
   description: "Turn Sound Into Sheet Music",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.ico",
   },
 };
 
