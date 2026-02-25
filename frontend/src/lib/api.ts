@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const rawBaseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const baseURL = rawBaseURL.endsWith("/") ? rawBaseURL.slice(0, -1) : rawBaseURL;
+
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1",
+    baseURL: `${baseURL}/api/v1`,
 });
 
 api.interceptors.request.use(
