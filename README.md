@@ -7,7 +7,9 @@
 ---
 
 ## 1. The Real-World Problem
-Imagine a musician who has a melody in their head or recorded on their phone, but doesn't know how to write sheet music or create MIDI files. For many, the transition from "idea" to "composition" is a technical wall. Manual transcription takes years of ear training, and hiring professional transcribers is expensive and slow. 
+Imagine a musician who has a melody in their head or just hummed into a recording on their phone. They have the "soul" of a song, but they don't know how to write sheet music or create professional MIDI files to use in a studio. 
+
+For most people, turning sound into notes requires years of expensive ear training and music theory. Hiring a professional transcriber is often slow and costs more than an independent artist can afford. This technical wall stops thousands of great songs from ever being produced.
 
 **Gandharva was built to tear down that wall.**
 
@@ -16,50 +18,67 @@ Imagine a musician who has a melody in their head or recorded on their phone, bu
 ## 2. The Solution: Enter Gandharva
 Gandharva acts as an **"AI Translator"** for sound. 
 
-You upload an MP3, and the AI "listens" to the frequencies, figures out the exact notes, chords, and beats, and gives you back the digital building blocks (MIDI, data) to use in music software. Whether it's a hummed melody or a complex piano piece, Gandharva decodes the music so you can focus on the art.
+You upload an MP3 or WAV file, and the AI "listens" to the complex frequencies, calculates the exact notes, chords, and beats, and gives you back the digital building blocks (MIDI, data) to use in music software. Whether it's a simple whistled tune or a recording of a piano, Gandharva decodes the music so you can focus on the craft of creation.
 
 ---
 
 ## 3. How It Works: The Journey of an Audio File
-To make this magic happen, the file goes through a four-step professional pipeline:
+To make this magic happen, every file goes through a three-stage professional pipeline:
 
-*   **Step 1: The Storefront (Frontend)**: The user logs in via the Next.js website (hosted on Netlify). Firebase checks their ID like a security guard to ensure their data remains private.
-*   **Step 2: The Delivery (API)**: Once the user clicks "Export," the audio file is sent securely over the internet to our "AI factory."
-*   **Step 3: The Brain (Backend)**: The FastAPI server on Hugging Face receives the audio. ML models (like **Basic Pitch** and **Librosa**) analyze the soundwaves, turning raw audio into math, and math into musical notes.
-*   **Step 4: The Vault (Database)**: The extracted data is safely locked away in **Firebase Firestore**, tied to the user's specific account so only they can access their digital sheet music.
-
----
-
-## 4. The Tech Stack
-*   **Frontend**: [Next.js](https://nextjs.org/) (React) deployed on **Netlify**. Chosen for speed, SEO, and a beautiful, high-performance user interface.
-*   **Backend**: [FastAPI](https://fastapi.tiangolo.com/) & [Gradio](https://gradio.app/) deployed on **Hugging Face Spaces**. Chosen because Hugging Face provides powerful servers specialized for heavy AI and machine learning math.
-*   **Database/Auth**: [Firebase](https://firebase.google.com/) (gandharva-2026). Chosen for enterprise-grade secure user login and real-time data storage across the globe.
+*   **Step 1: The Storefront (Frontend)**: The user interacts with our Next.js website (hosted on Netlify). When they log in, **Firebase** acts like a security guard, verifying their identity and keeping their musical library private and secure.
+*   **Step 2: The Brain (Backend)**: The audio file is sent to our AI factory—a **FastAPI** server running on **Hugging Face**. Here, specialized Machine Learning models analyze the literal waves of the sound, turning vibrations into math, and math into musical notation.
+*   **Step 3: The Vault (Database)**: Once analyzed, the results are safely locked away in **Firebase Firestore**. This data is tied specifically to the user's account, so their compositions are always there whenever they log back in.
 
 ---
 
-## 5. Advanced Engineering
-Developing a cross-platform AI studio required solving two major technical hurdles:
+## 4. The API: How Machines Talk to Each Other
+Imagine a busy restaurant. 
+*   The **Customer** (the Frontend website) wants a "Transcribed Song."
+*   The **Kitchen** (the AI Backend) knows how to cook that song.
+*   The **Waiter** is the **API** (Application Programming Interface). 
+
+The website doesn't need to know *how* the kitchen works; it just hands the order (the audio file) to the Waiter (the API). The Waiter takes it to the kitchen, waits for it to be ready, and brings the finished musical data back to the customer.
+
+### Core Endpoints:
+Developers can interact with our "Brain" directly through these paths:
+*   `POST /api/v1/auth/register` & `/login`: Secures user sessions and manages access.
+*   `POST /api/v1/audio/analyze`: The "Chef's Special." This is where raw audio goes in, and precise musical data (BPM, Notes, Confidence) comes out.
+
+> [!TIP]
+> Because we built this using an API-first approach, someone could theoretically build an iPhone app, an Android app, or even a hardware plugin tomorrow and plug it into our existing "Brain" without changing a single line of backend code.
+
+---
+
+## 5. The Tech Stack
+*   **Frontend**: [Next.js](https://nextjs.org/) (React) deployed on **Netlify**. Chosen for its lightning-fast speed and the ability to build a beautiful, modern interface that musicians love.
+*   **Backend**: [FastAPI](https://fastapi.tiangolo.com/) & [Gradio](https://gradio.app/) deployed on **Hugging Face Spaces**. Chosen because Hugging Face provides massive computing power specifically meant for heavy AI and signal-processing math.
+*   **Database/Auth**: [Firebase](https://firebase.google.com/) (Project: `gandharva-2026`). Chosen for enterprise-grade security and the ability to store and sync user data in real-time.
+
+---
+
+## 6. Advanced Engineering
+Building an AI studio isn't just about the "big pieces." It's about solving the small, complex technical hurdles:
 
 ### Denoiser++
-Cloud platforms like Hugging Face often mangle complex JSON blobs when they are pasted into environment secrets. We built **Denoiser++**, a custom Python sanitization script that automatically cleans up messy JSON formatting (fixing unquoted keys and stripping "illegal" characters) to prevent server crashes during initialization.
+Cloud environments often mangle complex text data when you paste it into their settings. We built **Denoiser++**, a custom Python script that cleans up messy formatting (like unquoted JSON keys) automatically. It ensures our server never crashes just because a configuration key was missing a quote.
 
 ### API Path Routing Priority
-To ensure the backend API never gets blocked by the Gradio dashboard, we implemented a custom mounting strategy. We specifically mount the FastAPI application to `/api/v1` *before* the Gradio interface. This ensures that analytical requests always have priority and solves "405 Method Not Allowed" errors common in hybrid deployments.
+To keep the backend running smoothly, we had to ensure our API never got blocked by the visual dashboard. We specifically "mounted" the FastAPI engine to `/api/v1` *before* the dashboard. This ensures that when a machine sends a file for analysis, the server answers immediately instead of getting confused by the user interface.
 
 ---
 
-## 6. Environment Setup & Security
+## 7. Environment Setup & Security
 ### .env.example
 > [!IMPORTANT]
-> **Security Rule**: Never hardcode actual API keys in the source code. Use placeholders.
+> **Security First**: Never share or hardcode your real API keys. Use placeholders like the ones below.
 
 | Variable | Description | Placeholder Value |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_API_URL` | Production Backend URL | `https://your-api-url.hf.space` |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase Admin Key | `{"type": "service_account", ...}` |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase Web Key | `your-firebase-key-here` |
+| `NEXT_PUBLIC_API_URL` | Production Backend URL | `https://your-api-link.hf.space` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Backend Admin Secret | `{"type": "service_account", ...}` |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Frontend API Key | `your-web-key-here` |
 
-### Running Locally
+### Commands to Run Locally
 **Backend**:
 ```bash
 cd backend
@@ -73,7 +92,7 @@ npm run dev
 
 ---
 
-## 7. Inspiration & Call to Action
-You don't need to be a math genius to build with AI. By connecting the right tools (Next.js, FastAPI, Firebase), you can solve real-world problems and build tools that people love. 
+## 8. Inspiration & Call to Action
+You don't need to be a math genius to build with Artificial Intelligence. By learning how to connect the right tools—like **Next.js**, **FastAPI**, and **Firebase**—you can solve real-world problems and help people create art.
 
 **Fork this repo, explore the code, and build your own magic!** 🚀
