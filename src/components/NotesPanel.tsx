@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
-import { Music, Clock, Download } from "lucide-react";
+import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF } from "@/lib/exporters";
+import { toast } from "sonner";
 
 interface Note {
   note: string;
@@ -12,11 +14,26 @@ interface Note {
 interface NotesPanelProps {
   notes: Note[];
   isAnalyzing: boolean;
+  fileName?: string | null;
+  instrument?: string | null;
+  confidence?: number;
 }
 
 const PIANO_KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-const NotesPanel = ({ notes, isAnalyzing }: NotesPanelProps) => {
+const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: NotesPanelProps) => {
+  const baseName = (fileName?.replace(/\.[^.]+$/, "") || "gandharva-notes");
+  const handleExport = (kind: "midi" | "csv" | "pdf") => {
+    if (!notes.length) return;
+    try {
+      if (kind === "midi") exportNotesAsMIDI(notes, baseName);
+      else if (kind === "csv") exportNotesAsCSV(notes, baseName);
+      else exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName);
+      toast.success(`${kind.toUpperCase()} exported`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Export failed");
+    }
+  };
   return (
     <div className="space-y-5">
       {/* Detected Notes */}
@@ -120,21 +137,24 @@ const NotesPanel = ({ notes, isAnalyzing }: NotesPanelProps) => {
           <h3 className="panel-heading text-sm">Export</h3>
         </div>
         <div className="grid grid-cols-1 gap-2">
-          {["MIDI File", "PDF Report", "CSV Notes"].map((label) => (
+          {[
+            { kind: "midi" as const, label: "MIDI File", ext: ".mid", Icon: FileMusic },
+            { kind: "pdf" as const, label: "PDF Report", ext: ".pdf", Icon: FileText },
+            { kind: "csv" as const, label: "CSV Notes", ext: ".csv", Icon: FileSpreadsheet },
+          ].map(({ kind, label, ext, Icon }) => (
             <Button
-              key={label}
+              key={kind}
               variant="glass"
               size="sm"
+              onClick={() => handleExport(kind)}
               className="justify-between text-xs rounded-xl h-10 border border-white/5 hover:border-primary/30"
               disabled={notes.length === 0}
             >
               <span className="flex items-center gap-2">
-                <Download className="h-3.5 w-3.5" />
+                <Icon className="h-3.5 w-3.5" />
                 {label}
               </span>
-              <span className="text-[10px] text-muted-foreground">
-                .{label.split(" ")[0].toLowerCase()}
-              </span>
+              <span className="text-[10px] text-muted-foreground">{ext}</span>
             </Button>
           ))}
         </div>
