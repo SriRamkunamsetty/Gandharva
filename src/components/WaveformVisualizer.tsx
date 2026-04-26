@@ -164,24 +164,53 @@ const WaveformVisualizer = ({ audioFile }: WaveformVisualizerProps) => {
 
   if (!audioFile) {
     return (
-      <div className="glass rounded-xl p-8 flex items-center justify-center h-48">
-        <p className="text-muted-foreground text-sm">Upload audio to see waveform visualization</p>
+      <div className="glass-card p-8 flex flex-col items-center justify-center h-48 gap-3 text-center">
+        <div className="flex items-end gap-1 h-10 opacity-40">
+          {[40, 70, 30, 90, 55, 80, 45, 65, 35, 75].map((h, i) => (
+            <div
+              key={i}
+              className="w-1 rounded-full bg-primary"
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Upload audio to see the waveform
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-xl p-4 space-y-3">
+    <div className="glass-card glass-card-hover p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-display text-foreground">Waveform</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{duration.toFixed(1)}s</span>
-          <Button variant="glass" size="icon" className="h-8 w-8" onClick={togglePlay}>
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        <div>
+          <h3 className="panel-heading text-sm">Waveform</h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Time-domain signal preview
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-muted-foreground tabular-nums">
+            {duration.toFixed(1)}s
+          </span>
+          <Button
+            variant="glass"
+            size="icon"
+            className="h-9 w-9 rounded-full"
+            onClick={togglePlay}
+          >
+            {isPlaying ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4 ml-0.5" />
+            )}
           </Button>
         </div>
       </div>
-      <canvas ref={canvasRef} className="w-full h-32 rounded-lg" />
+      <div className="rounded-xl bg-black/20 border border-white/5 p-2">
+        <canvas ref={canvasRef} className="w-full h-32 rounded-lg" />
+      </div>
     </div>
   );
 };
