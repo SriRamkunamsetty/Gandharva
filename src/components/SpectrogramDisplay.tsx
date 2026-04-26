@@ -64,16 +64,31 @@ const SpectrogramDisplay = ({ audioFile }: SpectrogramProps) => {
 
   if (!audioFile) {
     return (
-      <div className="glass rounded-xl p-8 flex items-center justify-center h-32">
-        <p className="text-muted-foreground text-sm">Spectrogram will appear here</p>
+      <div className="glass-card p-8 flex items-center justify-center h-32">
+        <p className="text-muted-foreground text-sm">
+          Spectrogram will appear here
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-xl p-4">
-      <h3 className="text-sm font-display text-foreground mb-2">Spectrogram</h3>
-      <canvas ref={canvasRef} className="w-full h-28 rounded-lg" />
+    <div className="glass-card glass-card-hover p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="panel-heading text-sm">Spectrogram</h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Frequency × time intensity
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <span className="h-2 w-2 rounded-full bg-primary/60" />
+          <span>Live</span>
+        </div>
+      </div>
+      <div className="rounded-xl bg-black/30 border border-white/5 p-2">
+        <canvas ref={canvasRef} className="w-full h-28 rounded-lg" />
+      </div>
     </div>
   );
 };

@@ -1,6 +1,15 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Home, Music, BarChart3, History, Settings, Mic, ArrowLeft } from "lucide-react";
+import {
+  Home,
+  Music,
+  BarChart3,
+  History,
+  Settings,
+  Mic,
+  ArrowLeft,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AudioUploader from "@/components/AudioUploader";
@@ -8,6 +17,7 @@ import WaveformVisualizer from "@/components/WaveformVisualizer";
 import SpectrogramDisplay from "@/components/SpectrogramDisplay";
 import InstrumentDetector from "@/components/InstrumentDetector";
 import NotesPanel from "@/components/NotesPanel";
+import { MusicParticles } from "@/components/AnimatedBackground";
 
 interface Note {
   note: string;
@@ -16,9 +26,12 @@ interface Note {
   frequency: number;
 }
 
-// Simulate AI analysis with mock data
-const simulateAnalysis = (): Promise<{ instrument: string; confidence: number; notes: Note[] }> => {
-  return new Promise((resolve) => {
+const simulateAnalysis = (): Promise<{
+  instrument: string;
+  confidence: number;
+  notes: Note[];
+}> =>
+  new Promise((resolve) => {
     setTimeout(() => {
       resolve({
         instrument: "Piano",
@@ -34,16 +47,15 @@ const simulateAnalysis = (): Promise<{ instrument: string; confidence: number; n
           { note: "B3", start: 2.85, end: 3.2, frequency: 246.94 },
         ],
       });
-    }, 2000);
+    }, 1800);
   });
-};
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Home", active: false },
-  { icon: Music, label: "Transcription", active: true },
-  { icon: BarChart3, label: "Analytics", active: false },
-  { icon: History, label: "History", active: false },
-  { icon: Settings, label: "Settings", active: false },
+  { icon: Home, label: "Home", route: "/" },
+  { icon: Music, label: "Transcription", route: "/dashboard", active: true },
+  { icon: BarChart3, label: "Analytics", route: "/dashboard" },
+  { icon: History, label: "History", route: "/dashboard" },
+  { icon: Settings, label: "Settings", route: "/dashboard" },
 ];
 
 const Dashboard = () => {
@@ -69,126 +81,253 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="relative min-h-screen flex flex-col gradient-hero overflow-hidden">
+      {/* Ambient background orbs — premium depth */}
+      <div
+        className="ambient-orb"
+        style={{
+          width: 520,
+          height: 520,
+          top: -160,
+          left: -120,
+          background: "hsl(var(--violet-glow) / 0.35)",
+        }}
+      />
+      <div
+        className="ambient-orb"
+        style={{
+          width: 600,
+          height: 600,
+          bottom: -200,
+          right: -160,
+          background: "hsl(var(--neon-cyan) / 0.18)",
+        }}
+      />
+      <div
+        className="ambient-orb"
+        style={{
+          width: 400,
+          height: 400,
+          top: "40%",
+          left: "45%",
+          background: "hsl(var(--accent) / 0.12)",
+        }}
+      />
+      <MusicParticles />
+
       {/* Top bar */}
-      <header className="glass-strong border-b border-border px-4 py-3 flex items-center justify-between z-20">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+      <header className="relative z-20 px-6 py-4 flex items-center justify-between">
+        <motion.div
+          className="flex items-center gap-3"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+            className="rounded-full h-9 w-9 hover:bg-white/5"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="font-display text-lg text-gradient">Gandharva</h1>
-        </div>
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/20">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div className="leading-tight">
+              <h1 className="font-display text-lg text-gradient tracking-tight">
+                Gandharva
+              </h1>
+              <p className="text-[10px] text-muted-foreground tracking-wider uppercase">
+                Studio
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="flex items-center gap-2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+        >
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            AI Engine Ready
+          </div>
           <Button
             variant={isRecording ? "destructive" : "hero"}
             size="sm"
             onClick={() => setIsRecording(!isRecording)}
+            className="rounded-full"
           >
-            <Mic className="h-4 w-4 mr-1" />
+            <Mic className="h-4 w-4 mr-1.5" />
             {isRecording ? "Stop" : "Record"}
           </Button>
-        </div>
+        </motion.div>
       </header>
 
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel */}
-        <motion.aside
-          className="w-72 border-r border-border p-4 space-y-4 overflow-y-auto hidden lg:block"
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <AudioUploader onFileSelect={handleFileSelect} />
-          <InstrumentDetector
-            instrument={instrument}
-            confidence={confidence}
-            isAnalyzing={isAnalyzing}
-          />
-        </motion.aside>
+      {/* Section title */}
+      <motion.div
+        className="relative z-10 px-6 pt-2 pb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <h2 className="font-display text-3xl md:text-4xl tracking-tight text-foreground">
+          Transcription <span className="text-gradient">Studio</span>
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1.5 max-w-xl">
+          Upload audio or record live to extract instruments, notes, and pitch in
+          real-time.
+        </p>
+      </motion.div>
 
-        {/* Center Panel */}
-        <motion.main
-          className="flex-1 p-4 space-y-4 overflow-y-auto"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          {/* Mobile upload */}
-          <div className="lg:hidden">
+      {/* Main grid */}
+      <div className="relative z-10 flex-1 px-6 pb-28 lg:pb-8 overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1600px] mx-auto">
+          {/* Left column */}
+          <motion.aside
+            className="lg:col-span-3 space-y-5"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
             <AudioUploader onFileSelect={handleFileSelect} />
-          </div>
-
-          <WaveformVisualizer audioFile={audioFile} />
-          <SpectrogramDisplay audioFile={audioFile} />
-
-          {/* Pitch graph placeholder */}
-          <div className="glass rounded-xl p-4">
-            <h3 className="text-sm font-display text-foreground mb-2">Pitch Graph (Hz vs Time)</h3>
-            {notes.length > 0 ? (
-              <div className="h-32 flex items-end gap-1 px-2">
-                {notes.map((n, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex-1 rounded-t-sm"
-                    style={{
-                      background: "var(--gradient-accent)",
-                      height: `${(n.frequency / 600) * 100}%`,
-                    }}
-                    initial={{ scaleY: 0 }}
-                    animate={{ scaleY: 1 }}
-                    transition={{ delay: i * 0.08, duration: 0.4 }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="h-32 flex items-center justify-center">
-                <p className="text-xs text-muted-foreground">Pitch data will appear after analysis</p>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile instrument + notes */}
-          <div className="lg:hidden space-y-4">
             <InstrumentDetector
               instrument={instrument}
               confidence={confidence}
               isAnalyzing={isAnalyzing}
             />
-            <NotesPanel notes={notes} isAnalyzing={isAnalyzing} />
-          </div>
-        </motion.main>
+          </motion.aside>
 
-        {/* Right Panel */}
-        <motion.aside
-          className="w-72 border-l border-border p-4 overflow-y-auto hidden lg:block"
-          initial={{ x: 20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <NotesPanel notes={notes} isAnalyzing={isAnalyzing} />
-        </motion.aside>
+          {/* Center column */}
+          <motion.main
+            className="lg:col-span-6 space-y-5"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <WaveformVisualizer audioFile={audioFile} />
+            <SpectrogramDisplay audioFile={audioFile} />
+
+            {/* Pitch graph */}
+            <div className="glass-card glass-card-hover p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="panel-heading text-sm">Pitch Graph</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Frequency (Hz) over time
+                  </p>
+                </div>
+                {notes.length > 0 && (
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1 rounded-full bg-white/5">
+                    {notes.length} notes
+                  </span>
+                )}
+              </div>
+              {notes.length > 0 ? (
+                <div className="h-36 flex items-end gap-1.5 px-1">
+                  {notes.map((n, i) => (
+                    <motion.div
+                      key={i}
+                      className="flex-1 rounded-t-md relative group"
+                      style={{
+                        background: "var(--gradient-accent)",
+                        height: `${(n.frequency / 600) * 100}%`,
+                        boxShadow: "0 -2px 12px hsl(var(--primary) / 0.25)",
+                      }}
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ delay: i * 0.06, duration: 0.5, ease: "easeOut" }}
+                    >
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-medium text-foreground bg-card px-1.5 py-0.5 rounded border border-border whitespace-nowrap">
+                        {n.note}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-36 flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground">
+                    Pitch data will appear after analysis
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile: instrument + notes */}
+            <div className="lg:hidden space-y-5">
+              <InstrumentDetector
+                instrument={instrument}
+                confidence={confidence}
+                isAnalyzing={isAnalyzing}
+              />
+              <NotesPanel notes={notes} isAnalyzing={isAnalyzing} />
+            </div>
+          </motion.main>
+
+          {/* Right column */}
+          <motion.aside
+            className="lg:col-span-3 hidden lg:block"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            <NotesPanel notes={notes} isAnalyzing={isAnalyzing} />
+          </motion.aside>
+        </div>
       </div>
 
-      {/* Bottom nav */}
-      <nav className="glass-strong border-t border-border px-2 py-2 flex justify-around z-20">
+      {/* Bottom nav — floating Apple-style dock */}
+      <motion.nav
+        className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-2 py-2 flex items-center gap-1 border border-border/60"
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         {NAV_ITEMS.map((item) => (
           <button
             key={item.label}
-            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full transition-all ${
               item.active
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
             }`}
-            onClick={() => {
-              if (item.label === "Home") navigate("/");
-            }}
+            onClick={() => navigate(item.route)}
           >
-            <item.icon className="h-5 w-5" />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <item.icon className="h-4 w-4" />
+            <span className="text-[9px] font-medium">{item.label}</span>
           </button>
         ))}
-      </nav>
+      </motion.nav>
+
+      {/* Desktop side dock */}
+      <motion.nav
+        className="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-2xl px-2 py-3 flex-col items-center gap-1 border border-border/60"
+        initial={{ x: -40, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.label}
+            title={item.label}
+            className={`group relative h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
+              item.active
+                ? "bg-primary/15 text-primary shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+            }`}
+            onClick={() => navigate(item.route)}
+          >
+            <item.icon className="h-4 w-4" />
+            <span className="absolute left-12 px-2 py-1 rounded-md bg-card border border-border text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              {item.label}
+            </span>
+          </button>
+        ))}
+      </motion.nav>
     </div>
   );
 };
