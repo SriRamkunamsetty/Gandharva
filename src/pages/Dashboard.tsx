@@ -214,12 +214,12 @@ const Dashboard = () => {
 
           <div className="lg:hidden space-y-5">
             <InstrumentDetector instrument={instrument} confidence={confidence} isAnalyzing={isAnalyzing} />
-            <NotesPanel notes={notes} isAnalyzing={isAnalyzing} fileName={fileName} />
+            <NotesPanel notes={notes} isAnalyzing={isAnalyzing} fileName={fileName} instrument={instrument} confidence={confidence} />
           </div>
         </motion.main>
 
         <motion.aside className="lg:col-span-3 hidden lg:block" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.25 }}>
-          <NotesPanel notes={notes} isAnalyzing={isAnalyzing} fileName={fileName} />
+          <NotesPanel notes={notes} isAnalyzing={isAnalyzing} fileName={fileName} instrument={instrument} confidence={confidence} />
         </motion.aside>
       </div>
     </AppShell>
