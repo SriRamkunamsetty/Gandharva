@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
-import { Music, Clock, Download } from "lucide-react";
+import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF } from "@/lib/exporters";
+import { toast } from "sonner";
 
 interface Note {
   note: string;
@@ -12,11 +14,26 @@ interface Note {
 interface NotesPanelProps {
   notes: Note[];
   isAnalyzing: boolean;
+  fileName?: string | null;
+  instrument?: string | null;
+  confidence?: number;
 }
 
 const PIANO_KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-const NotesPanel = ({ notes, isAnalyzing }: NotesPanelProps) => {
+const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: NotesPanelProps) => {
+  const baseName = (fileName?.replace(/\.[^.]+$/, "") || "gandharva-notes");
+  const handleExport = (kind: "midi" | "csv" | "pdf") => {
+    if (!notes.length) return;
+    try {
+      if (kind === "midi") exportNotesAsMIDI(notes, baseName);
+      else if (kind === "csv") exportNotesAsCSV(notes, baseName);
+      else exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName);
+      toast.success(`${kind.toUpperCase()} exported`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Export failed");
+    }
+  };
   return (
     <div className="space-y-5">
       {/* Detected Notes */}

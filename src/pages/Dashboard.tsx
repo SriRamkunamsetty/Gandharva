@@ -159,7 +159,7 @@ const Dashboard = () => {
 
   return (
     <AppShell
-      title={<>Transcription <span className="text-gradient">Studio</span></> as any}
+      title={<>Transcription <span className="text-gradient">Studio</span></>}
       subtitle="Upload audio or record live to extract instruments, notes, and pitch."
       actions={actions}
     >
