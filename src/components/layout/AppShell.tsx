@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 interface AppShellProps {
   children: ReactNode;
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   actions?: ReactNode;
   showBack?: boolean;
