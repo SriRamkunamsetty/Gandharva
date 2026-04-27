@@ -9,6 +9,8 @@ import HistoryPage from "./pages/History";
 import AnalyticsPage from "./pages/Analytics";
 import SettingsPage from "./pages/Settings";
 import AuthPage from "./pages/Auth";
+import ComparePage from "./pages/Compare";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -27,7 +29,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

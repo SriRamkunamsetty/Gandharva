@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Music, BarChart3, History, Settings, Mic, Sparkles, LogOut, ArrowLeft } from "lucide-react";
+import { Home, Music, BarChart3, History, Settings, GitCompare, Sparkles, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MusicParticles } from "@/components/AnimatedBackground";
@@ -20,6 +20,7 @@ const NAV = [
   { icon: Music, label: "Studio", route: "/dashboard" },
   { icon: BarChart3, label: "Analytics", route: "/analytics" },
   { icon: History, label: "History", route: "/history" },
+  { icon: GitCompare, label: "Compare", route: "/compare" },
   { icon: Settings, label: "Settings", route: "/settings" },
 ];
 
