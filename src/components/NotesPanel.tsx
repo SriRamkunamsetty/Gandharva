@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic, FileImage, FileCode2 } from "lucide-react";
+import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic, FileImage, FileCode2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF, exportNotesAsMusicXML, exportNotesAsPNG } from "@/lib/exporters";
 import { toast } from "sonner";
@@ -23,14 +24,16 @@ const PIANO_KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", 
 
 const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: NotesPanelProps) => {
   const baseName = (fileName?.replace(/\.[^.]+$/, "") || "gandharva-notes");
+  const [watermark, setWatermark] = useState(true);
   const handleExport = (kind: "midi" | "csv" | "pdf" | "musicxml" | "png") => {
     if (!notes.length) return;
+    const wm = { enabled: watermark, includeTimestamp: true };
     try {
-      if (kind === "midi") exportNotesAsMIDI(notes, baseName);
-      else if (kind === "csv") exportNotesAsCSV(notes, baseName);
-      else if (kind === "pdf") exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName);
-      else if (kind === "musicxml") exportNotesAsMusicXML(notes, { title: baseName, instrument }, baseName);
-      else exportNotesAsPNG(notes, { title: baseName, instrument, confidence }, baseName);
+      if (kind === "midi") exportNotesAsMIDI(notes, baseName, wm);
+      else if (kind === "csv") exportNotesAsCSV(notes, baseName, wm);
+      else if (kind === "pdf") exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName, wm);
+      else if (kind === "musicxml") exportNotesAsMusicXML(notes, { title: baseName, instrument }, baseName, wm);
+      else exportNotesAsPNG(notes, { title: baseName, instrument, confidence }, baseName, wm);
       toast.success(`${kind.toUpperCase()} exported`);
     } catch (e: any) {
       toast.error(e.message ?? "Export failed");
@@ -138,6 +141,42 @@ const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: No
           </div>
           <h3 className="panel-heading text-sm">Export</h3>
         </div>
+
+        {/* Watermark toggle */}
+        <button
+          type="button"
+          onClick={() => setWatermark((w) => !w)}
+          className={`group w-full flex items-center justify-between gap-2 mb-3 px-3 py-2.5 rounded-xl border transition-colors ${
+            watermark
+              ? "bg-primary/10 border-primary/30 hover:border-primary/50"
+              : "bg-white/[0.02] border-white/5 hover:border-white/15"
+          }`}
+          aria-pressed={watermark}
+        >
+          <span className="flex items-center gap-2 min-w-0">
+            <Sparkles className={`h-3.5 w-3.5 shrink-0 ${watermark ? "text-primary" : "text-muted-foreground"}`} />
+            <span className="text-left min-w-0">
+              <span className="block text-[11px] font-medium text-foreground truncate">
+                Brand watermark
+              </span>
+              <span className="block text-[10px] text-muted-foreground truncate">
+                Developed by Mohan Sriram Kunamsetty
+              </span>
+            </span>
+          </span>
+          <span
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${
+              watermark ? "bg-primary/70" : "bg-white/10"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                watermark ? "translate-x-4" : "translate-x-0.5"
+              }`}
+            />
+          </span>
+        </button>
+
         <div className="grid grid-cols-1 gap-2">
           {[
             { kind: "midi" as const, label: "MIDI File", ext: ".mid", Icon: FileMusic },

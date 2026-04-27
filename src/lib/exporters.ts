@@ -7,6 +7,21 @@ export interface ExportNote {
   frequency: number;
 }
 
+/* ---------------- Watermark ---------------- */
+export const WATERMARK_TEXT = "Developed by Mohan Sriram Kunamsetty";
+
+export interface WatermarkOptions {
+  enabled?: boolean;       // default true
+  includeTimestamp?: boolean; // default true
+}
+
+const wmLine = (opts?: WatermarkOptions) => {
+  const enabled = opts?.enabled ?? true;
+  if (!enabled) return "";
+  const ts = (opts?.includeTimestamp ?? true) ? ` • ${new Date().toLocaleString()}` : "";
+  return `${WATERMARK_TEXT}${ts}`;
+};
+
 const triggerDownload = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -19,7 +34,13 @@ const triggerDownload = (blob: Blob, filename: string) => {
 };
 
 /* ---------------- CSV ---------------- */
-export const exportNotesAsCSV = (notes: ExportNote[], baseName = "gandharva-notes") => {
+export const exportNotesAsCSV = (
+  notes: ExportNote[],
+  baseName = "gandharva-notes",
+  wm?: WatermarkOptions
+) => {
+  const watermark = wmLine(wm);
+  const wmHeader = watermark ? `# ${watermark}\n# Gandharva — AI Music Transcription\n` : "";
   const header = "note,frequency_hz,start_seconds,end_seconds,duration_seconds\n";
   const rows = notes
     .map(
@@ -29,7 +50,8 @@ export const exportNotesAsCSV = (notes: ExportNote[], baseName = "gandharva-note
         )},${(n.end - n.start).toFixed(3)}`
     )
     .join("\n");
-  const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
+  const footer = watermark ? `\n# ${watermark}\n` : "";
+  const blob = new Blob([wmHeader + header + rows + footer], { type: "text/csv;charset=utf-8" });
   triggerDownload(blob, `${baseName}.csv`);
 };
 
@@ -53,7 +75,11 @@ const writeVarLen = (value: number): number[] => {
   return buffer;
 };
 
-export const exportNotesAsMIDI = (notes: ExportNote[], baseName = "gandharva-notes") => {
+export const exportNotesAsMIDI = (
+  notes: ExportNote[],
+  baseName = "gandharva-notes",
+  wm?: WatermarkOptions
+) => {
   const TICKS_PER_QUARTER = 480;
   const TEMPO_BPM = 120;
   const TICKS_PER_SECOND = (TICKS_PER_QUARTER * TEMPO_BPM) / 60;
@@ -72,6 +98,20 @@ export const exportNotesAsMIDI = (notes: ExportNote[], baseName = "gandharva-not
 
   // Track bytes
   const trackBytes: number[] = [];
+
+  // Watermark as MIDI meta events (Text 0x01, Copyright 0x02, Track Name 0x03)
+  const watermark = wmLine(wm);
+  if (watermark) {
+    const encode = (s: string) => Array.from(new TextEncoder().encode(s));
+    const writeMeta = (type: number, text: string) => {
+      const data = encode(text);
+      trackBytes.push(0x00, 0xff, type, ...writeVarLen(data.length), ...data);
+    };
+    writeMeta(0x03, "Gandharva Transcription"); // Track name
+    writeMeta(0x02, watermark);                  // Copyright notice
+    writeMeta(0x01, watermark);                  // Generic text
+  }
+
   // Tempo meta event (microseconds per quarter)
   const microsPerQuarter = Math.round(60_000_000 / TEMPO_BPM);
   trackBytes.push(0x00, 0xff, 0x51, 0x03,
@@ -110,7 +150,8 @@ export const exportNotesAsMIDI = (notes: ExportNote[], baseName = "gandharva-not
 export const exportAnalysisAsPDF = (
   meta: { title: string; instrument: string | null; confidence: number; fileName?: string | null },
   notes: ExportNote[],
-  baseName = "gandharva-report"
+  baseName = "gandharva-report",
+  wm?: WatermarkOptions
 ) => {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -202,11 +243,35 @@ export const exportAnalysisAsPDF = (
 
   // Footer
   const pageCount = doc.getNumberOfPages();
+  const watermark = wmLine(wm);
   for (let p = 1; p <= pageCount; p++) {
     doc.setPage(p);
     doc.setFontSize(9);
     doc.setTextColor(150);
     doc.text(`Gandharva • Page ${p} of ${pageCount}`, pageW / 2, pageH - 20, { align: "center" });
+
+    if (watermark) {
+      // Diagonal centered watermark — semi-transparent cyan/white tint
+      const gs: any = (doc as any).GState ? new (doc as any).GState({ opacity: 0.12 }) : null;
+      if (gs) (doc as any).setGState(gs);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(46);
+      doc.setTextColor(0, 200, 220);
+      doc.text(WATERMARK_TEXT, pageW / 2, pageH / 2, {
+        align: "center",
+        angle: -28,
+      } as any);
+      if (gs) (doc as any).setGState(new (doc as any).GState({ opacity: 1 }));
+
+      // Bottom-center highlighted credit line
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setFillColor(20, 12, 40);
+      const wmW = doc.getTextWidth(watermark) + 24;
+      doc.roundedRect((pageW - wmW) / 2, pageH - 44, wmW, 18, 6, 6, "F");
+      doc.setTextColor(126, 232, 255); // neon cyan accent
+      doc.text(watermark, pageW / 2, pageH - 31, { align: "center" });
+    }
   }
 
   doc.save(`${baseName}.pdf`);
@@ -233,7 +298,8 @@ const noteToParts = (n: string) => {
 export const exportNotesAsMusicXML = (
   notes: ExportNote[],
   meta: { title: string; instrument?: string | null },
-  baseName = "gandharva-score"
+  baseName = "gandharva-score",
+  wm?: WatermarkOptions
 ) => {
   const DIVISIONS = 4;
   const measureNotes = notes
@@ -251,12 +317,30 @@ export const exportNotesAsMusicXML = (
     })
     .join("\n");
 
+  const watermark = wmLine(wm);
+  const xmlEscape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const wmComment = watermark ? `<!-- ${xmlEscape(watermark)} -->\n` : "";
+  const creditBlock = watermark
+    ? `  <credit page="1">
+    <credit-words font-size="11" justify="center" valign="bottom" default-x="600" default-y="40">${xmlEscape(watermark)}</credit-words>
+  </credit>
+  `
+    : "";
+  const rightsLine = watermark ? `<rights>${xmlEscape(WATERMARK_TEXT)}</rights>` : "";
+  const miscField = watermark
+    ? `<miscellaneous><miscellaneous-field name="watermark">${xmlEscape(watermark)}</miscellaneous-field></miscellaneous>`
+    : "";
+
   const xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+${wmComment}<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.1">
   <work><work-title>${meta.title}</work-title></work>
-  <identification><creator type="composer">Gandharva AI</creator></identification>
-  <part-list>
+  <identification>
+    <creator type="composer">Gandharva AI</creator>
+    ${rightsLine}
+    ${miscField}
+  </identification>
+${creditBlock}<part-list>
     <score-part id="P1"><part-name>${meta.instrument ?? "Instrument"}</part-name></score-part>
   </part-list>
   <part id="P1">
@@ -278,7 +362,8 @@ ${measureNotes}
 export const exportNotesAsPNG = (
   notes: ExportNote[],
   meta: { title: string; instrument?: string | null; confidence?: number },
-  baseName = "gandharva-sheet"
+  baseName = "gandharva-sheet",
+  wm?: WatermarkOptions
 ) => {
   const W = 1400, H = 600;
   const canvas = document.createElement("canvas");
@@ -356,6 +441,56 @@ export const exportNotesAsPNG = (
   ctx.fillStyle = "rgba(255,255,255,0.4)";
   ctx.font = "400 12px Inter, sans-serif";
   ctx.fillText(`Gandharva • ${notes.length} notes • ${new Date().toLocaleString()}`, 60, H - 30);
+
+  // Watermark — diagonal large + bottom-center pill, themed in neon cyan
+  const watermark = wmLine(wm);
+  if (watermark) {
+    // Diagonal big watermark
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(-Math.PI / 9);
+    const grad2 = ctx.createLinearGradient(-400, 0, 400, 0);
+    grad2.addColorStop(0, "rgba(126, 232, 255, 0.18)");
+    grad2.addColorStop(0.5, "rgba(168, 132, 255, 0.22)");
+    grad2.addColorStop(1, "rgba(126, 232, 255, 0.18)");
+    ctx.fillStyle = grad2;
+    ctx.font = "800 56px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(WATERMARK_TEXT, 0, 0);
+    ctx.restore();
+
+    // Bottom-center highlighted pill
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "600 14px Inter, sans-serif";
+    const padX = 18, padY = 10;
+    const textW = ctx.measureText(watermark).width;
+    const pillW = textW + padX * 2;
+    const pillH = 30;
+    const pillX = (W - pillW) / 2;
+    const pillY = H - 60;
+    // pill bg
+    ctx.fillStyle = "rgba(11, 8, 32, 0.75)";
+    const r = pillH / 2;
+    ctx.beginPath();
+    ctx.moveTo(pillX + r, pillY);
+    ctx.lineTo(pillX + pillW - r, pillY);
+    ctx.arc(pillX + pillW - r, pillY + r, r, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(pillX + r, pillY + pillH);
+    ctx.arc(pillX + r, pillY + r, r, Math.PI / 2, -Math.PI / 2);
+    ctx.closePath();
+    ctx.fill();
+    // pill border (cyan glow)
+    ctx.strokeStyle = "rgba(126, 232, 255, 0.55)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    // text
+    ctx.fillStyle = "#7ee8ff";
+    ctx.fillText(watermark, W / 2, pillY + pillH / 2 + 1);
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
+  }
 
   canvas.toBlob((blob) => {
     if (blob) triggerDownload(blob, `${baseName}.png`);
