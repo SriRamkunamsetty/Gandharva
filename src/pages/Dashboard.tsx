@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Mic, Save } from "lucide-react";
+import { Mic, Save, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AudioUploader from "@/components/AudioUploader";
@@ -9,30 +9,55 @@ import SpectrogramDisplay from "@/components/SpectrogramDisplay";
 import InstrumentDetector from "@/components/InstrumentDetector";
 import NotesPanel from "@/components/NotesPanel";
 import AppShell from "@/components/layout/AppShell";
+import AnalysisProgress, { AnalysisStage } from "@/components/AnalysisProgress";
+import InstrumentCandidates, { InstrumentCandidate } from "@/components/InstrumentCandidates";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ExportNote } from "@/lib/exporters";
+import { fileToBase64, getAudioDuration } from "@/lib/audioUtils";
+import { useLiveRecorder } from "@/hooks/useLiveRecorder";
 
-const simulateAnalysis = (): Promise<{ instrument: string; confidence: number; notes: ExportNote[] }> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        instrument: "Piano",
-        confidence: 87,
-        notes: [
-          { note: "C4", start: 0.12, end: 0.45, frequency: 261.63 },
-          { note: "E4", start: 0.48, end: 0.82, frequency: 329.63 },
-          { note: "G4", start: 0.85, end: 1.2, frequency: 392.0 },
-          { note: "C5", start: 1.25, end: 1.6, frequency: 523.25 },
-          { note: "A4", start: 1.65, end: 2.0, frequency: 440.0 },
-          { note: "F4", start: 2.05, end: 2.4, frequency: 349.23 },
-          { note: "D4", start: 2.45, end: 2.8, frequency: 293.66 },
-          { note: "B3", start: 2.85, end: 3.2, frequency: 246.94 },
-        ],
-      });
-    }, 1800);
+interface AnalyzeResult {
+  instrument: string;
+  confidence: number;
+  notes: ExportNote[];
+  candidates?: InstrumentCandidate[];
+  tempo_bpm?: number;
+  key?: string;
+  mood?: string;
+  summary?: string;
+}
+
+const callAnalyzeAudio = async (
+  blob: Blob,
+  fileName: string | null,
+  onStage: (s: AnalysisStage) => void
+): Promise<AnalyzeResult> => {
+  onStage("preprocess");
+  const { base64, mimeType } = await fileToBase64(blob);
+  const duration = await getAudioDuration(blob);
+  onStage("features");
+  await new Promise((r) => setTimeout(r, 250));
+  onStage("classify");
+  const { data, error } = await supabase.functions.invoke("analyze-audio", {
+    body: { audioBase64: base64, mimeType, fileName, durationHint: duration },
   });
+  if (error) throw new Error(error.message ?? "Analysis failed");
+  if (data?.error) throw new Error(data.error);
+  onStage("pitch");
+  await new Promise((r) => setTimeout(r, 200));
+  return {
+    instrument: data.instrument ?? "Unknown",
+    confidence: Math.round(Number(data.confidence ?? 0)),
+    notes: Array.isArray(data.notes) ? data.notes : [],
+    candidates: Array.isArray(data.candidates) ? data.candidates : undefined,
+    tempo_bpm: data.tempo_bpm,
+    key: data.key,
+    mood: data.mood,
+    summary: data.summary,
+  };
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -40,12 +65,15 @@ const Dashboard = () => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [stage, setStage] = useState<AnalysisStage>("idle");
   const [instrument, setInstrument] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
   const [notes, setNotes] = useState<ExportNote[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [candidates, setCandidates] = useState<InstrumentCandidate[]>([]);
+  const [meta, setMeta] = useState<{ tempo?: number; key?: string; mood?: string; summary?: string }>({});
   const [savedId, setSavedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const liveOffsetRef = useRef(0);
 
   // Reopen from history
   useEffect(() => {
@@ -64,7 +92,7 @@ const Dashboard = () => {
     }
   }, []);
 
-  const autoSave = async (data: { instrument: string; confidence: number; notes: ExportNote[]; file: File }) => {
+  const autoSave = async (data: { instrument: string; confidence: number; notes: ExportNote[]; file: File | { name: string } }) => {
     if (!user) return;
     const prefs = JSON.parse(localStorage.getItem("gandharva:prefs") || "{}");
     if (prefs.autoSave === false) return;
@@ -96,17 +124,74 @@ const Dashboard = () => {
       setIsAnalyzing(true);
       setInstrument(null);
       setNotes([]);
+      setCandidates([]);
+      setMeta({});
       setSavedId(null);
-
-      const result = await simulateAnalysis();
-      setInstrument(result.instrument);
-      setConfidence(result.confidence);
-      setNotes(result.notes);
-      setIsAnalyzing(false);
-      autoSave({ ...result, file });
+      try {
+        const result = await callAnalyzeAudio(file, file.name, setStage);
+        setInstrument(result.instrument);
+        setConfidence(result.confidence);
+        setNotes(result.notes);
+        setCandidates(result.candidates ?? [{ name: result.instrument, confidence: result.confidence }]);
+        setMeta({ tempo: result.tempo_bpm, key: result.key, mood: result.mood, summary: result.summary });
+        setStage("done");
+        toast.success(`Detected: ${result.instrument}`);
+        autoSave({
+          instrument: result.instrument,
+          confidence: result.confidence,
+          notes: result.notes,
+          file,
+        });
+      } catch (e: any) {
+        setStage("error");
+        toast.error(e.message ?? "Analysis failed");
+      } finally {
+        setIsAnalyzing(false);
+      }
     },
     [user]
   );
+
+  // Live mic
+  const liveRecorder = useLiveRecorder({
+    chunkSeconds: 5,
+    onChunk: async (blob, index) => {
+      try {
+        const tmpName = `live-chunk-${index}.webm`;
+        const result = await callAnalyzeAudio(blob, tmpName, setStage);
+        const offset = liveOffsetRef.current;
+        const shifted = result.notes.map((n) => ({
+          ...n,
+          start: n.start + offset,
+          end: n.end + offset,
+        }));
+        setNotes((prev) => [...prev, ...shifted]);
+        if (result.instrument) setInstrument(result.instrument);
+        if (result.confidence) setConfidence(result.confidence);
+        if (result.candidates?.length) setCandidates(result.candidates);
+        liveOffsetRef.current = offset + 5;
+        setStage("done");
+      } catch (e: any) {
+        toast.error(`Live chunk failed: ${e.message ?? e}`);
+      }
+    },
+  });
+
+  const toggleRecording = async () => {
+    if (liveRecorder.isRecording) {
+      liveRecorder.stop();
+      toast.success("Recording stopped");
+    } else {
+      setNotes([]);
+      setCandidates([]);
+      setInstrument(null);
+      setConfidence(0);
+      setFileName("Live Recording");
+      liveOffsetRef.current = 0;
+      await liveRecorder.start();
+      if (!liveRecorder.error) toast.success("Recording — analyzing every 5s");
+    }
+  };
 
   const manualSave = async () => {
     if (!user) {
@@ -146,13 +231,13 @@ const Dashboard = () => {
         </Button>
       )}
       <Button
-        variant={isRecording ? "destructive" : "hero"}
+        variant={liveRecorder.isRecording ? "destructive" : "hero"}
         size="sm"
-        onClick={() => setIsRecording(!isRecording)}
+        onClick={toggleRecording}
         className="rounded-full"
       >
-        <Mic className="h-4 w-4 mr-1.5" />
-        {isRecording ? "Stop" : "Record"}
+        {liveRecorder.isRecording ? <Square className="h-4 w-4 mr-1.5" /> : <Mic className="h-4 w-4 mr-1.5" />}
+        {liveRecorder.isRecording ? "Stop" : "Record"}
       </Button>
     </>
   );
@@ -166,7 +251,20 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1600px] mx-auto">
         <motion.aside className="lg:col-span-3 space-y-5" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}>
           <AudioUploader onFileSelect={handleFileSelect} />
+          <AnalysisProgress stage={stage} />
           <InstrumentDetector instrument={instrument} confidence={confidence} isAnalyzing={isAnalyzing} />
+          {candidates.length > 0 && (
+            <InstrumentCandidates candidates={candidates} isAnalyzing={isAnalyzing} />
+          )}
+          {(meta.tempo || meta.key || meta.mood) && (
+            <div className="glass-card p-5 space-y-2">
+              <h3 className="panel-heading text-sm mb-2">Music Insights</h3>
+              {meta.tempo && <div className="flex justify-between text-xs"><span className="text-muted-foreground">Tempo</span><span>{Math.round(meta.tempo)} BPM</span></div>}
+              {meta.key && <div className="flex justify-between text-xs"><span className="text-muted-foreground">Key</span><span>{meta.key}</span></div>}
+              {meta.mood && <div className="flex justify-between text-xs"><span className="text-muted-foreground">Mood</span><span className="capitalize">{meta.mood}</span></div>}
+              {meta.summary && <p className="text-[11px] text-muted-foreground pt-2 border-t border-white/5">{meta.summary}</p>}
+            </div>
+          )}
         </motion.aside>
 
         <motion.main className="lg:col-span-6 space-y-5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
