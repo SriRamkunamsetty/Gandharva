@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic } from "lucide-react";
+import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic, FileImage, FileCode2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF } from "@/lib/exporters";
+import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF, exportNotesAsMusicXML, exportNotesAsPNG } from "@/lib/exporters";
 import { toast } from "sonner";
 
 interface Note {
@@ -23,12 +23,14 @@ const PIANO_KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", 
 
 const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: NotesPanelProps) => {
   const baseName = (fileName?.replace(/\.[^.]+$/, "") || "gandharva-notes");
-  const handleExport = (kind: "midi" | "csv" | "pdf") => {
+  const handleExport = (kind: "midi" | "csv" | "pdf" | "musicxml" | "png") => {
     if (!notes.length) return;
     try {
       if (kind === "midi") exportNotesAsMIDI(notes, baseName);
       else if (kind === "csv") exportNotesAsCSV(notes, baseName);
-      else exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName);
+      else if (kind === "pdf") exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName);
+      else if (kind === "musicxml") exportNotesAsMusicXML(notes, { title: baseName, instrument }, baseName);
+      else exportNotesAsPNG(notes, { title: baseName, instrument, confidence }, baseName);
       toast.success(`${kind.toUpperCase()} exported`);
     } catch (e: any) {
       toast.error(e.message ?? "Export failed");
@@ -141,6 +143,8 @@ const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: No
             { kind: "midi" as const, label: "MIDI File", ext: ".mid", Icon: FileMusic },
             { kind: "pdf" as const, label: "PDF Report", ext: ".pdf", Icon: FileText },
             { kind: "csv" as const, label: "CSV Notes", ext: ".csv", Icon: FileSpreadsheet },
+            { kind: "musicxml" as const, label: "MusicXML", ext: ".musicxml", Icon: FileCode2 },
+            { kind: "png" as const, label: "Sheet PNG", ext: ".png", Icon: FileImage },
           ].map(({ kind, label, ext, Icon }) => (
             <Button
               key={kind}
