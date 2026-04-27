@@ -211,3 +211,153 @@ export const exportAnalysisAsPDF = (
 
   doc.save(`${baseName}.pdf`);
 };
+
+/* ---------------- MusicXML ---------------- */
+const STEP_ALTER: Record<string, { step: string; alter: number }> = {
+  C: { step: "C", alter: 0 }, "C#": { step: "C", alter: 1 }, Db: { step: "D", alter: -1 },
+  D: { step: "D", alter: 0 }, "D#": { step: "D", alter: 1 }, Eb: { step: "E", alter: -1 },
+  E: { step: "E", alter: 0 }, F: { step: "F", alter: 0 },
+  "F#": { step: "F", alter: 1 }, Gb: { step: "G", alter: -1 },
+  G: { step: "G", alter: 0 }, "G#": { step: "G", alter: 1 }, Ab: { step: "A", alter: -1 },
+  A: { step: "A", alter: 0 }, "A#": { step: "A", alter: 1 }, Bb: { step: "B", alter: -1 },
+  B: { step: "B", alter: 0 },
+};
+
+const noteToParts = (n: string) => {
+  const m = n.match(/^([A-G][#b]?)(-?\d+)$/);
+  if (!m) return { step: "C", alter: 0, octave: 4 };
+  const sa = STEP_ALTER[m[1]] ?? { step: "C", alter: 0 };
+  return { ...sa, octave: parseInt(m[2], 10) };
+};
+
+export const exportNotesAsMusicXML = (
+  notes: ExportNote[],
+  meta: { title: string; instrument?: string | null },
+  baseName = "gandharva-score"
+) => {
+  const DIVISIONS = 4;
+  const measureNotes = notes
+    .map((n) => {
+      const dur = Math.max(1, Math.round((n.end - n.start) * DIVISIONS * 2));
+      const { step, alter, octave } = noteToParts(n.note);
+      return `      <note>
+        <pitch>
+          <step>${step}</step>${alter ? `\n          <alter>${alter}</alter>` : ""}
+          <octave>${octave}</octave>
+        </pitch>
+        <duration>${dur}</duration>
+        <type>${dur >= 8 ? "whole" : dur >= 4 ? "half" : dur >= 2 ? "quarter" : "eighth"}</type>
+      </note>`;
+    })
+    .join("\n");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work><work-title>${meta.title}</work-title></work>
+  <identification><creator type="composer">Gandharva AI</creator></identification>
+  <part-list>
+    <score-part id="P1"><part-name>${meta.instrument ?? "Instrument"}</part-name></score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <divisions>${DIVISIONS}</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <clef><sign>G</sign><line>2</line></clef>
+      </attributes>
+${measureNotes}
+    </measure>
+  </part>
+</score-partwise>`;
+  triggerDownload(new Blob([xml], { type: "application/vnd.recordare.musicxml+xml" }), `${baseName}.musicxml`);
+};
+
+/* ---------------- PNG sheet rendering ---------------- */
+export const exportNotesAsPNG = (
+  notes: ExportNote[],
+  meta: { title: string; instrument?: string | null; confidence?: number },
+  baseName = "gandharva-sheet"
+) => {
+  const W = 1400, H = 600;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, "#0b0820");
+  grad.addColorStop(1, "#050211");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+  // Title
+  ctx.fillStyle = "#e5f9ff";
+  ctx.font = "600 28px Inter, sans-serif";
+  ctx.fillText(meta.title, 60, 60);
+  ctx.fillStyle = "#7ee8ff";
+  ctx.font = "400 16px Inter, sans-serif";
+  ctx.fillText(
+    `${meta.instrument ?? "Unknown instrument"}${meta.confidence != null ? ` • ${meta.confidence}% confidence` : ""}`,
+    60, 88
+  );
+
+  // Staff
+  const staffTop = 200;
+  const staffGap = 14;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(60, staffTop + i * staffGap);
+    ctx.lineTo(W - 60, staffTop + i * staffGap);
+    ctx.stroke();
+  }
+  // Treble clef glyph (approx)
+  ctx.fillStyle = "#7ee8ff";
+  ctx.font = "italic 800 60px Georgia, serif";
+  ctx.fillText("𝄞", 70, staffTop + 50);
+
+  // Notes layout (single line)
+  const noteAreaX = 160, noteAreaW = W - 220;
+  const maxNotes = Math.min(notes.length, 32);
+  const slot = noteAreaW / Math.max(1, maxNotes);
+  notes.slice(0, maxNotes).forEach((n, i) => {
+    const cx = noteAreaX + slot * i + slot / 2;
+    // Map midi (48..84) to staff y
+    const midi = (() => {
+      const m = n.note.match(/^([A-G][#b]?)(-?\d+)$/);
+      if (!m) return 60;
+      const semis: Record<string, number> = { C:0,"C#":1,Db:1,D:2,"D#":3,Eb:3,E:4,F:5,"F#":6,Gb:6,G:7,"G#":8,Ab:8,A:9,"A#":10,Bb:10,B:11 };
+      return (parseInt(m[2], 10) + 1) * 12 + (semis[m[1]] ?? 0);
+    })();
+    const ratio = (84 - midi) / 36;
+    const cy = staffTop - 20 + ratio * 90;
+
+    // Note head
+    ctx.fillStyle = "#5eead4";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 8, 6, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    // Stem
+    ctx.strokeStyle = "#5eead4";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + 7, cy);
+    ctx.lineTo(cx + 7, cy - 36);
+    ctx.stroke();
+    // Label
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "500 11px Inter, sans-serif";
+    ctx.fillText(n.note, cx - 10, cy + 28);
+  });
+
+  // Footer
+  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  ctx.font = "400 12px Inter, sans-serif";
+  ctx.fillText(`Gandharva • ${notes.length} notes • ${new Date().toLocaleString()}`, 60, H - 30);
+
+  canvas.toBlob((blob) => {
+    if (blob) triggerDownload(blob, `${baseName}.png`);
+  }, "image/png");
+};
