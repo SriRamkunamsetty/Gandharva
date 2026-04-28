@@ -1,10 +1,11 @@
 import HeroSection from "@/components/HeroSection";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <LayoutWrapper fullscreen>
       <HeroSection />
-    </div>
+    </LayoutWrapper>
   );
 };
 
