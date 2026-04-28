@@ -294,15 +294,15 @@ const AppSidebar = () => {
 const CompactSidebar = () => {
   const { pathname } = useLocation();
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden no-scrollbar">
       <div
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "linear-gradient(180deg, hsl(var(--royal-indigo)) 0%, hsl(var(--bg-deep)) 100%)",
+            "radial-gradient(ellipse at 50% 0%, #0b1430 0%, #060a1c 50%, #020617 100%)",
         }}
       />
-      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/35" />
+      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/40 shadow-[inset_0_0_24px_hsl(var(--gold)/0.08)]" />
       <div className="pt-6 pb-4 flex justify-center">
         <svg viewBox="0 0 64 64" className="w-9 h-9 text-gold" fill="currentColor">
           <path d="M32 4 L36 14 L46 14 L38 21 L41 31 L32 25 L23 31 L26 21 L18 14 L28 14 Z" />
