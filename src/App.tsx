@@ -11,6 +11,8 @@ import SettingsPage from "./pages/Settings";
 import AuthPage from "./pages/Auth";
 import ComparePage from "./pages/Compare";
 import Onboarding from "./pages/Onboarding";
+import Library from "./pages/Library";
+import Exports from "./pages/Exports";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/compare" element={<ComparePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/exports" element={<Exports />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

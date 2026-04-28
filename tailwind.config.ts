@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         display: ["Orbitron", "sans-serif"],
         body: ["Inter", "sans-serif"],
+        cinzel: ["Cinzel", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -53,6 +54,12 @@ export default {
         },
         neon: "hsl(var(--neon-cyan))",
         violet: "hsl(var(--violet-glow))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          glow: "hsl(var(--gold-glow))",
+        },
+        royal: "hsl(var(--royal-indigo))",
+        cream: "hsl(var(--soft-cream))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

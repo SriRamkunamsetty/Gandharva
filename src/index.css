@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -65,6 +65,13 @@
 
     --font-display: 'Orbitron', sans-serif;
     --font-body: 'Inter', sans-serif;
+
+    /* Mythological gold palette */
+    --gold: 44 65% 52%;        /* #D4AF37 */
+    --gold-glow: 42 88% 64%;   /* #F6C453 */
+    --royal-indigo: 256 49% 21%; /* #2A1B4D */
+    --soft-cream: 42 65% 87%;  /* #F5E6C8 */
+    --bg-deep: 232 75% 5%;     /* #050816 */
   }
 }
 
