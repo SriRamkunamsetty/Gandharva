@@ -3,6 +3,7 @@ import { Home, AudioWaveform, History, Scale, Music2, FileText, BarChart3, Setti
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/gandharva-logo.png";
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home, path: "/" },
@@ -30,24 +31,62 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { pathname } = useLocation();
   return (
     <div className="relative flex flex-col h-full w-full overflow-hidden">
-      {/* Royal gradient + texture */}
+      {/* Deep navy base — matches logo background */}
       <div
-        className="absolute inset-0 -z-10"
+        className="absolute inset-0 -z-20"
         style={{
           background:
-            "linear-gradient(180deg, hsl(var(--royal-indigo)) 0%, hsl(232 60% 8%) 55%, hsl(var(--bg-deep)) 100%)",
+            "radial-gradient(ellipse at 50% 0%, #0b1430 0%, #060a1c 45%, #020617 100%)",
         }}
       />
-      <div className="absolute inset-0 -z-10 opacity-[0.07] pointer-events-none"
+      {/* Divine golden ambient bloom */}
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
         style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 10%, hsl(var(--gold-glow)) 0, transparent 40%), radial-gradient(circle at 80% 90%, hsl(var(--gold)) 0, transparent 40%)",
+          background:
+            "radial-gradient(circle at 50% 12%, hsl(var(--gold-glow) / 0.18) 0%, transparent 38%), radial-gradient(circle at 50% 92%, hsl(var(--gold) / 0.10) 0%, transparent 45%)",
         }}
       />
+      {/* Cinematic vignette */}
+      <div
+        className="absolute inset-0 -z-10 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%)",
+        }}
+      />
+      {/* Floating shimmer particles */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        {Array.from({ length: 14 }).map((_, i) => (
+          <motion.span
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${(i * 37) % 100}%`,
+              top: `${(i * 53) % 100}%`,
+              width: i % 3 === 0 ? 3 : 2,
+              height: i % 3 === 0 ? 3 : 2,
+              background: "hsl(var(--gold-glow))",
+              boxShadow: "0 0 8px hsl(var(--gold-glow) / 0.9)",
+              opacity: 0.55,
+            }}
+            animate={{
+              y: [0, -14, 0],
+              opacity: [0.25, 0.85, 0.25],
+            }}
+            transition={{
+              duration: 6 + (i % 5),
+              repeat: Infinity,
+              delay: i * 0.4,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Gold double border */}
-      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/40" />
-      <div className="pointer-events-none absolute inset-3 rounded-2xl border border-gold/15" />
+      {/* Engraved gold double border */}
+      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/45 shadow-[inset_0_0_30px_hsl(var(--gold)/0.08)]" />
+      <div className="pointer-events-none absolute inset-[10px] rounded-2xl border border-gold/15" />
 
       {/* Ornamental corners */}
       <GoldCorner className="absolute top-1.5 left-1.5" />
@@ -55,36 +94,59 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       <GoldCorner className="absolute bottom-1.5 left-1.5 -rotate-90" />
       <GoldCorner className="absolute bottom-1.5 right-1.5 rotate-180" />
 
-      {/* Logo */}
-      <div className="relative z-10 pt-10 pb-6 px-6 text-center">
+      {/* Logo — uses uploaded artwork as primary identity */}
+      <div className="relative z-10 pt-9 pb-5 px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="mx-auto w-20 h-20 rounded-full flex items-center justify-center"
+          initial={{ opacity: 0, y: -10, scale: 0.92 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+          className="relative mx-auto w-[120px] h-[120px] flex items-center justify-center"
+        >
+          {/* Divine radial aura behind logo */}
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, hsl(var(--gold-glow) / 0.45) 0%, hsl(var(--gold) / 0.18) 35%, transparent 70%)",
+              filter: "blur(6px)",
+            }}
+            animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.06, 1] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <img
+            src={logoImg}
+            alt="Gandharva"
+            className="relative z-10 w-[112px] h-[112px] object-contain drop-shadow-[0_0_18px_hsl(var(--gold-glow)/0.55)]"
+            style={{
+              maskImage:
+                "radial-gradient(circle at 50% 45%, black 62%, transparent 78%)",
+              WebkitMaskImage:
+                "radial-gradient(circle at 50% 45%, black 62%, transparent 78%)",
+            }}
+          />
+        </motion.div>
+        <h1
+          className="font-cinzel text-[22px] tracking-[0.32em] mt-2 font-semibold"
           style={{
             background:
-              "radial-gradient(circle, hsl(var(--gold)/0.35) 0%, transparent 70%)",
+              "linear-gradient(180deg, #F6C453 0%, #D4AF37 55%, #B8902B 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: "drop-shadow(0 0 10px hsl(var(--gold-glow) / 0.45))",
           }}
         >
-          <svg viewBox="0 0 64 64" className="w-14 h-14 text-gold drop-shadow-[0_0_12px_hsl(var(--gold-glow)/0.6)]" fill="currentColor">
-            <path d="M32 4 L36 14 L46 14 L38 21 L41 31 L32 25 L23 31 L26 21 L18 14 L28 14 Z" opacity="0.9" />
-            <circle cx="32" cy="42" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M32 36 V52 M28 40 V48 M36 40 V48" stroke="currentColor" strokeWidth="1.2" />
-          </svg>
-        </motion.div>
-        <h1 className="font-cinzel text-2xl tracking-[0.2em] mt-3 text-gold drop-shadow-[0_0_10px_hsl(var(--gold-glow)/0.4)]">
           GANDHARVA
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2">
-          <div className="h-px w-8 bg-gradient-to-r from-transparent to-gold/60" />
-          <div className="w-1.5 h-1.5 rotate-45 bg-gold/70" />
-          <div className="h-px w-8 bg-gradient-to-l from-transparent to-gold/60" />
+          <div className="h-px w-10 bg-gradient-to-r from-transparent via-gold/70 to-gold/30" />
+          <div className="w-1.5 h-1.5 rotate-45 bg-gold-glow shadow-[0_0_8px_hsl(var(--gold-glow))]" />
+          <div className="h-px w-10 bg-gradient-to-l from-transparent via-gold/70 to-gold/30" />
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="relative z-10 flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+      <nav className="no-scrollbar relative z-10 flex-1 px-4 py-3 space-y-1.5 overflow-y-auto">
         {NAV_ITEMS.map((item, i) => {
           const isActive =
             item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
@@ -103,19 +165,19 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
               >
                 <div
                   className={cn(
-                    "relative flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300",
-                    "border border-transparent",
+                    "relative flex items-center gap-3 px-4 py-2.5 rounded-[10px] transition-all duration-500",
+                    "border border-transparent overflow-hidden",
                     isActive
-                      ? "text-gold-glow border-gold/50"
-                      : "text-cream/75 hover:text-gold-glow hover:border-gold/30"
+                      ? "text-gold-glow border-gold/60"
+                      : "text-cream/70 hover:text-gold-glow hover:border-gold/25"
                   )}
                   style={
                     isActive
                       ? {
                           background:
-                            "linear-gradient(90deg, hsl(var(--gold)/0.18), hsl(var(--gold)/0.04))",
+                            "linear-gradient(90deg, hsl(var(--gold) / 0.22) 0%, hsl(var(--gold) / 0.06) 60%, transparent 100%)",
                           boxShadow:
-                            "inset 0 0 12px hsl(var(--gold)/0.15), 0 0 18px hsl(var(--gold-glow)/0.18)",
+                            "inset 0 1px 0 hsl(var(--gold-glow) / 0.25), inset 0 0 18px hsl(var(--gold) / 0.18), 0 0 22px hsl(var(--gold-glow) / 0.22)",
                         }
                       : undefined
                   }
@@ -123,10 +185,12 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
                   {isActive && (
                     <motion.span
                       layoutId="sidebarActiveBar"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r bg-gold-glow shadow-[0_0_10px_hsl(var(--gold-glow))]"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-[3px] rounded-r-full bg-gradient-to-b from-gold-glow via-gold to-gold/40 shadow-[0_0_12px_hsl(var(--gold-glow))]"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
+                  {/* Hover shimmer */}
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-gold/15 to-transparent" />
                   <Icon
                     className={cn(
                       "h-[18px] w-[18px] transition-transform duration-300",
@@ -134,7 +198,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
                       isActive ? "text-gold-glow" : "text-gold/70"
                     )}
                   />
-                  <span className="font-cinzel text-[15px] tracking-wide">
+                  <span className="font-cinzel text-[15px] tracking-[0.12em] uppercase">
                     {item.label}
                   </span>
                 </div>
@@ -230,15 +294,15 @@ const AppSidebar = () => {
 const CompactSidebar = () => {
   const { pathname } = useLocation();
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden no-scrollbar">
       <div
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "linear-gradient(180deg, hsl(var(--royal-indigo)) 0%, hsl(var(--bg-deep)) 100%)",
+            "radial-gradient(ellipse at 50% 0%, #0b1430 0%, #060a1c 50%, #020617 100%)",
         }}
       />
-      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/35" />
+      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/40 shadow-[inset_0_0_24px_hsl(var(--gold)/0.08)]" />
       <div className="pt-6 pb-4 flex justify-center">
         <svg viewBox="0 0 64 64" className="w-9 h-9 text-gold" fill="currentColor">
           <path d="M32 4 L36 14 L46 14 L38 21 L41 31 L32 25 L23 31 L26 21 L18 14 L28 14 Z" />

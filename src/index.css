@@ -119,6 +119,17 @@
     background-clip: text;
   }
 
+  /* Hidden scrollbar (preserves scrolling) */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
