@@ -248,8 +248,8 @@ const Dashboard = () => {
       subtitle="Upload audio or record live to extract instruments, notes, and pitch."
       actions={actions}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1600px] mx-auto">
-        <motion.aside className="lg:col-span-3 space-y-5" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5 max-w-[1600px] mx-auto">
+        <motion.aside className="md:col-span-1 lg:col-span-3 space-y-4 sm:space-y-5" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}>
           <AudioUploader onFileSelect={handleFileSelect} />
           <AnalysisProgress stage={stage} />
           <InstrumentDetector instrument={instrument} confidence={confidence} isAnalyzing={isAnalyzing} />
@@ -267,7 +267,7 @@ const Dashboard = () => {
           )}
         </motion.aside>
 
-        <motion.main className="lg:col-span-6 space-y-5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+        <motion.main className="md:col-span-1 lg:col-span-6 space-y-4 sm:space-y-5" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
           <WaveformVisualizer audioFile={audioFile} />
           <SpectrogramDisplay audioFile={audioFile} />
 
@@ -310,8 +310,8 @@ const Dashboard = () => {
             )}
           </div>
 
-          <div className="lg:hidden space-y-5">
-            <InstrumentDetector instrument={instrument} confidence={confidence} isAnalyzing={isAnalyzing} />
+          {/* Notes panel inline below main on mobile + tablet (single/double column) */}
+          <div className="lg:hidden space-y-4 sm:space-y-5">
             <NotesPanel notes={notes} isAnalyzing={isAnalyzing} fileName={fileName} instrument={instrument} confidence={confidence} />
           </div>
         </motion.main>
