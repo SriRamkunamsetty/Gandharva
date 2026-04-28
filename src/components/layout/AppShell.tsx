@@ -86,12 +86,15 @@ const AppShell = ({ children, title, subtitle, actions, showBack }: AppShellProp
         {subtitle && <p className="text-sm text-muted-foreground mt-1.5 max-w-xl">{subtitle}</p>}
       </motion.div>
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 px-6 pb-28 lg:pb-8 lg:pl-24 overflow-y-auto">{children}</div>
+      {/* Content
+          - Mobile (<600): single column, bottom dock, padding for dock
+          - Tablet (600-1024): compact icon sidebar on the left
+          - Desktop (>1024): full sidebar with labels, multi-column friendly */}
+      <div className="relative z-10 flex-1 px-4 sm:px-6 pb-28 md:pb-10 md:pl-20 lg:pl-24 overflow-y-auto">{children}</div>
 
-      {/* iOS liquid-glass dock — mobile bottom */}
+      {/* iOS liquid-glass dock — mobile bottom (<600px only) */}
       <motion.nav
-        className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-2 py-2 flex items-center gap-1 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+        className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30 glass-strong rounded-full px-2 py-2 flex items-center gap-1 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-[95vw] overflow-x-auto"
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         onMouseLeave={() => setHovered(null)}
@@ -128,9 +131,9 @@ const AppShell = ({ children, title, subtitle, actions, showBack }: AppShellProp
         })}
       </motion.nav>
 
-      {/* iOS liquid-glass dock — desktop side */}
+      {/* iOS liquid-glass sidebar — tablet (compact, icons only) + desktop (with hover labels) */}
       <motion.nav
-        className="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-2xl px-2 py-3 flex-col items-center gap-1 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+        className="hidden md:flex fixed left-3 lg:left-4 top-1/2 -translate-y-1/2 z-30 glass-strong rounded-2xl px-2 py-3 flex-col items-center gap-1 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         onMouseLeave={() => setHovered(null)}
