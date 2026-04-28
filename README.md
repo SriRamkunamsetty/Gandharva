@@ -1,273 +1,216 @@
-# 🎵 Gandharva — AI Music Transcription Studio
+# Gandharva
 
-> Turn any audio into instruments, notes, sheet music, and MIDI — powered by AI.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Built with Lovable](https://img.shields.io/badge/Built%20with-Lovable-7c3aed)](https://lovable.dev)
-
-**Live demo:** https://gandharva85.lovable.app
+> AI-powered, fully responsive music analysis platform — instrument recognition, note transcription, and multi-format exports across mobile, tablet, and desktop.
 
 ---
 
-## 📖 Table of Contents
-- [Problem Statement](#-problem-statement)
-- [Solution](#-solution)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [System Architecture](#-system-architecture)
-- [System Workflow](#-system-workflow)
-- [Block Diagram](#-block-diagram)
-- [Getting Started](#-getting-started)
-- [Project Structure](#-project-structure)
-- [Future Enhancements](#-future-enhancements)
-- [License](#-license)
+## Overview
+
+**Gandharva** is a responsive, multi-device music platform designed to deliver a consistent and scalable user experience across mobile, tablet, and desktop environments. It uses a unified architecture with adaptive layouts and reusable components to ensure flexibility and performance.
+
+It also performs real audio analysis: detecting instruments, transcribing pitch/notes, and exporting results as MIDI, MusicXML, PDF, CSV, and PNG sheet music — all branded with a themed watermark.
 
 ---
 
-## 🧩 Problem Statement
+## Problem Statement
 
-Musicians, students, producers, and researchers often need to transcribe audio recordings into a structured musical representation — identifying the instrument, extracting notes with timing, and exporting to formats like MIDI or sheet music.
+Modern music platforms often face the following challenges:
 
-Existing solutions are either:
-- 🔒 **Closed/expensive** desktop apps (Melodyne, AnthemScore)
-- 🧪 **Hard to use** (CREPE, Basic Pitch require Python + ML setup)
-- 📉 **Inaccurate** for polyphonic or multi-instrument input
-- 🌐 **Not collaborative** — no cloud history, no sharing, no comparison
-
-## 💡 Solution
-
-**Gandharva** is a fully cloud-native, AI-powered transcription studio that runs in the browser. Upload an audio file or record live from your microphone, and within seconds you get:
-
-- 🎻 **Instrument detection** with top-3 confidence scoring
-- 🎼 **Note transcription** (scientific pitch notation, frequency, start/end timing)
-- 🥁 **Tempo, key signature, and mood** detection
-- 📊 **Visualizations:** waveform, spectrogram, piano roll, pitch curves
-- 📤 **Multi-format export:** MIDI, MusicXML, CSV, branded PDF report, PNG sheet
-- ☁️ **Cloud history** with reopen + project comparison overlay
+- Inconsistent user experience across devices
+- Rigid UI layouts that do not adapt well to different screen sizes
+- Duplication of code when handling mobile and desktop separately
+- Poor performance due to inefficient rendering strategies
 
 ---
 
-## ✨ Features
+## Solution
 
-| Feature | Description |
-|---|---|
-| 🎤 **Live Mic Recording** | Stream microphone audio in 5-second chunks with near-real-time analysis |
-| 📁 **File Upload** | Drag & drop WAV, MP3, FLAC, OGG |
-| 🤖 **AI Analysis** | Multimodal Gemini via Lovable AI Gateway with 4-stage progress (preprocess → features → classify → pitch) |
-| 🎯 **Confidence Visualization** | Animated bars for top instrument candidates |
-| 📈 **Pitch Graph** | Frequency-over-time visualization |
-| 🎹 **Piano Roll** | Color-coded note timeline |
-| 💾 **Cloud Save** | Auto-save analyses to per-user history (RLS-protected) |
-| 🔁 **Reopen Projects** | Restore any past analysis with full data |
-| 🔀 **Compare Mode** | Overlay pitch curves & timelines from two projects |
-| 📤 **5 Export Formats** | MIDI · MusicXML · CSV · PDF report · PNG sheet |
-| ✨ **Onboarding Flow** | Animated 5-step welcome with skip + progress |
-| 🍏 **iOS Liquid Nav** | Glassmorphic dock with morphing active indicator |
-| 🔐 **Auth** | Email/password + session persistence |
+Gandharva solves these problems by implementing:
+
+- A **mobile-first responsive architecture**
+- A **single codebase** with adaptive layout rendering
+- A **component-driven UI system** that dynamically adjusts based on screen size
+- Efficient **navigation patterns** tailored to each device class
 
 ---
 
-## 🛠️ Tech Stack
+## System Architecture
+
+Gandharva follows a layered architecture:
+
+### 1. Presentation Layer (UI)
+- Renders the user interface using responsive design principles
+- Dynamically switches layouts based on screen-width breakpoints
+- Built with reusable shadcn/ui + Tailwind components
+
+### 2. Application Layer (Logic)
+- Handles navigation and routing (React Router)
+- Manages state and user interactions (React hooks + Context)
+- Controls conditional rendering of layouts (mobile, tablet, desktop)
+- Orchestrates analysis pipeline (preprocess → features → classify → pitch)
+
+### 3. Data Layer
+- Persists projects, notes, and analyses in **Lovable Cloud** (Postgres + Auth + RLS)
+- Backend audio analysis runs in an Edge Function powered by **Lovable AI Gateway (Gemini 2.5 Flash)**
+
+---
+
+## Workflow
+
+1. User accesses the application (mobile / tablet / desktop)
+2. System detects screen size using Tailwind breakpoints
+3. The appropriate layout is selected:
+   - **Mobile (<600px)** → single-column layout with bottom navigation dock
+   - **Tablet (600–1024px)** → two-column layout with compact icon sidebar
+   - **Desktop (>1024px)** → multi-column layout with full sidebar and secondary panels
+4. UI components render dynamically with lazy loading where appropriate
+5. User interactions (upload, record, navigate, export) are handled by the application layer
+6. Data is fetched/stored through the cloud data layer
+
+---
+
+## Tech Stack
 
 ### Frontend
-- **React 18** + **TypeScript 5** + **Vite 5**
-- **Tailwind CSS** (HSL design tokens, glassmorphism)
-- **Framer Motion** (liquid nav, page transitions, micro-interactions)
-- **shadcn/ui** + **Radix UI** primitives
-- **Lucide Icons**
-- **jsPDF** (PDF report generation)
-- **React Router v6**
-- **Sonner** (toasts)
+- **React 18 + Vite 5 + TypeScript 5**
+- **Tailwind CSS v3** — semantic design tokens, responsive utilities
+- **shadcn/ui** — accessible component primitives
+- **Framer Motion** — iOS-style liquid-glass nav transitions, page animations
+- **Wavesurfer.js** — waveform visualization
+- **React Router** — client-side routing
 
-### Backend (Lovable Cloud / Supabase)
-- **Supabase Postgres** with Row-Level Security
-- **Supabase Auth** (email/password)
-- **Supabase Edge Functions** (Deno runtime)
-- **Lovable AI Gateway** → Google Gemini 2.5 Flash (multimodal audio understanding)
+### State & Logic
+- React Context + hooks for auth and live recording
+- Conditional rendering driven by Tailwind breakpoints (`md:`, `lg:`)
+- Reusable `<AppShell>` wrapper for consistent navigation across all pages
 
-### Audio Processing
-- **Web Audio API** for waveform & spectrogram rendering
-- **MediaRecorder API** for live mic capture (chunked WebM/Opus)
-- **Custom MIDI byte writer** (Format-0 SMF)
-- **Custom MusicXML serializer** (3.1 Partwise)
-- **Canvas 2D** for PNG sheet rendering
+### Backend / Data
+- **Lovable Cloud** (managed Postgres, Auth, Storage, Edge Functions)
+- **Lovable AI Gateway** with Gemini 2.5 Flash for instrument & note detection
+- Row-Level Security on all user data
+- REST + RPC via the Supabase JS SDK
 
----
-
-## 🏗️ System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     CLIENT (Browser)                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐ │
-│  │   React UI   │  │ MediaRecorder│  │  Web Audio API     │ │
-│  │  (Vite/TSX)  │  │  (Live Mic)  │  │ (Waveform/Spectro) │ │
-│  └──────┬───────┘  └──────┬───────┘  └────────────────────┘ │
-│         │                 │                                  │
-│         └────────┬────────┘                                  │
-│                  │ base64 audio                              │
-└──────────────────┼──────────────────────────────────────────┘
-                   ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  LOVABLE CLOUD (Supabase)                    │
-│  ┌────────────────┐    ┌──────────────────┐    ┌──────────┐ │
-│  │  Edge Function │───▶│ Lovable AI       │───▶│  Gemini  │ │
-│  │ analyze-audio  │    │ Gateway          │    │ 2.5 Flash│ │
-│  └────────┬───────┘    └──────────────────┘    └──────────┘ │
-│           │                                                  │
-│           ▼                                                  │
-│  ┌────────────────┐    ┌──────────────────┐                 │
-│  │  Postgres + RLS│    │  Supabase Auth   │                 │
-│  │  projects      │    │ (email/password) │                 │
-│  └────────────────┘    └──────────────────┘                 │
-└─────────────────────────────────────────────────────────────┘
-```
+### Development Approach
+- Built with Lovable for rapid UI generation
+- Architecture and responsiveness structured manually for scalability
 
 ---
 
-## 🔄 System Workflow
+## Key Features
 
-### Upload Flow
-1. User drops audio file → `AudioUploader` component
-2. File converted to **base64** + duration extracted via `<audio>` metadata
-3. `AnalysisProgress` shows 4 stages: preprocess → features → classify → pitch
-4. POST to `analyze-audio` edge function with `{ audioBase64, mimeType, fileName, durationHint }`
-5. Edge function calls **Lovable AI Gateway** (Gemini 2.5 Flash) with **tool-calling** for structured output
-6. Returns `{ instrument, confidence, candidates[], notes[], tempo_bpm, key, mood, summary }`
-7. UI updates: instrument card, confidence bars, pitch graph, piano roll, notes list
-8. Auto-save inserts row into `projects` table (if `prefs.autoSave !== false`)
+### 1. Responsive Layout Engine
+| Breakpoint | Range       | Layout                                  | Navigation       |
+| ---------- | ----------- | --------------------------------------- | ---------------- |
+| Mobile     | `<600px`    | Single column, stacked panels           | Bottom dock      |
+| Tablet     | `600–1024`  | Two-column grid, compact panels         | Icon sidebar     |
+| Desktop    | `>1024px`   | 3-column (sidebar + main + notes panel) | Full sidebar     |
 
-### Live Mic Flow
-1. `useLiveRecorder` hook requests `getUserMedia({ audio: true })`
-2. `MediaRecorder` emits **5-second WebM chunks** via `ondataavailable`
-3. Each chunk → `analyze-audio` edge function in parallel
-4. Returned notes are **time-shifted** by `chunkIndex × 5s` and appended to state
-5. Stop → `MediaRecorder.stop()` + tracks released
+### 2. Adaptive Navigation System
+- **Mobile** → iOS liquid-glass bottom navigation
+- **Tablet** → compact icon-only sidebar
+- **Desktop** → full sidebar with hover labels and animated active indicator (Framer Motion `layoutId`)
 
-### Export Flow
-- **MIDI**: Custom Format-0 SMF byte writer (variable-length delta times, tempo meta event)
-- **MusicXML**: Score-Partwise 3.1 with treble clef, dynamic note duration mapping
-- **PDF**: jsPDF with branded header band + alternating-row notes table
-- **CSV**: Standard comma-separated with note/freq/start/end/duration
-- **PNG**: HTML Canvas 2D — staff lines, treble clef glyph, note heads with stems
+### 3. Dynamic Content Rendering
+- Grid layouts (1 / 2 / 3-4 columns) for History, Analytics, Compare
+- Tables convert to **card lists** on mobile
+- Conditional rendering avoids loading unused layouts
 
----
+### 4. Component Reusability
+- Same components (NotesPanel, WaveformVisualizer, InstrumentDetector, etc.) used across all breakpoints
+- Reduced duplication and improved maintainability
 
-## 📦 Block Diagram
+### 5. AI-Powered Analysis
+- Upload or **live-record** audio in 5-second chunks
+- Detect primary instrument + candidates with confidence bars
+- Transcribe notes with frequency, start time, end time
+- Extract tempo, key, mood
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                       │
-│  Onboarding ──▶ Auth ──▶ Studio ──▶ History/Analytics/Compare │
-└─────────────────────────┬──────────────────────────────────┘
-                          │
-┌─────────────────────────▼──────────────────────────────────┐
-│                    DOMAIN LAYER                             │
-│  AudioUploader │ LiveRecorder │ AnalysisProgress           │
-│  WaveformViz   │ SpectrogramViz │ NotesPanel │ Candidates  │
-└─────────────────────────┬──────────────────────────────────┘
-                          │
-┌─────────────────────────▼──────────────────────────────────┐
-│                    SERVICE LAYER                            │
-│  exporters.ts (MIDI/CSV/PDF/MusicXML/PNG)                  │
-│  audioUtils.ts (base64, duration)                          │
-│  useLiveRecorder.tsx (MediaRecorder hook)                  │
-│  useAuth.tsx (session management)                          │
-└─────────────────────────┬──────────────────────────────────┘
-                          │
-┌─────────────────────────▼──────────────────────────────────┐
-│                    DATA LAYER                               │
-│  Supabase Client │ Edge Functions │ Lovable AI Gateway     │
-└────────────────────────────────────────────────────────────┘
-```
+### 6. Branded Multi-Format Export
+- **MIDI** (`.mid`) — proper timing, watermark in meta events
+- **PDF Report** — sheet-style summary with diagonal watermark
+- **CSV** — note name, frequency, start, end (Excel-ready)
+- **MusicXML** — full notation software compatibility
+- **PNG Sheet** — rendered staff with treble clef, notes, stems
+- All exports include the themed **"Developed by Mohan Sriram Kunamsetty"** watermark (toggleable, with optional timestamp)
 
 ---
 
-## 🚀 Getting Started
+## Responsive Design Strategy
 
-### Prerequisites
-- Node.js 18+ and npm (or bun)
-
-### Installation
-
-```bash
-git clone <YOUR_GIT_URL>
-cd gandharva
-npm install
-npm run dev
-```
-
-The app runs at `http://localhost:5173`. Lovable Cloud is auto-configured via `.env`.
-
-### Editing on Lovable
-Open the [Lovable project](https://lovable.dev) and start prompting. Changes commit automatically to this repo.
+- **Mobile-first** design approach — base styles target the smallest screen
+- **Breakpoint-based** layout switching using Tailwind's `md:` (768px / tablet tier) and `lg:` (1024px / desktop tier)
+- **Flexible layouts** using `grid` and `flex` — no fixed widths
+- Avoidance of fixed dimensions; content scales fluidly
+- **Conditional rendering** instead of static `display: none` whenever possible, so heavy panels don't render off-screen
 
 ---
 
-## 📁 Project Structure
+## Performance Optimization
+
+- Lazy loading of heavy components (waveform, spectrogram, notes panel)
+- Efficient rendering — only the active layout tier mounts (no duplicate trees)
+- Optimized scrolling: single vertical scroll on mobile, multiple scroll regions on desktop
+- Reduced re-renders via memoized stats and stable dependency arrays
+- Edge-function analysis to keep the client thread free
+
+---
+
+## Scalability
+
+- Single codebase serves all devices
+- Modular page architecture — each route owns its layout and data fetching
+- Easily extendable for new export formats, AI models, or live-collab features
+
+---
+
+## Project Structure
 
 ```
-gandharva/
-├── src/
-│   ├── components/
-│   │   ├── layout/AppShell.tsx          # iOS liquid-glass nav
-│   │   ├── AudioUploader.tsx
-│   │   ├── WaveformVisualizer.tsx
-│   │   ├── SpectrogramDisplay.tsx
-│   │   ├── InstrumentDetector.tsx
-│   │   ├── InstrumentCandidates.tsx     # Top-N confidence bars
-│   │   ├── AnalysisProgress.tsx         # 4-stage progress
-│   │   ├── NotesPanel.tsx               # Notes + piano roll + 5 exports
-│   │   └── ui/                          # shadcn primitives
-│   ├── pages/
-│   │   ├── Index.tsx                    # Landing
-│   │   ├── Onboarding.tsx               # 5-step animated intro
-│   │   ├── Auth.tsx
-│   │   ├── Dashboard.tsx                # Studio
-│   │   ├── History.tsx
-│   │   ├── Analytics.tsx
-│   │   ├── Compare.tsx                  # Overlay 2 projects
-│   │   └── Settings.tsx
-│   ├── hooks/
-│   │   ├── useAuth.tsx
-│   │   └── useLiveRecorder.tsx
-│   ├── lib/
-│   │   ├── exporters.ts                 # MIDI/CSV/PDF/MusicXML/PNG
-│   │   └── audioUtils.ts
-│   └── integrations/supabase/           # Auto-generated client + types
-├── supabase/
-│   ├── functions/analyze-audio/         # Gemini-powered analysis
-│   └── migrations/                      # SQL migrations
-├── LICENSE                              # MIT
-└── README.md
+src/
+├── components/
+│   ├── layout/AppShell.tsx        # Responsive shell + adaptive nav
+│   ├── NotesPanel.tsx             # Notes table → card list on mobile
+│   ├── WaveformVisualizer.tsx
+│   ├── SpectrogramDisplay.tsx
+│   ├── InstrumentDetector.tsx
+│   ├── InstrumentCandidates.tsx
+│   └── AnalysisProgress.tsx
+├── pages/
+│   ├── Dashboard.tsx              # Studio (1/2/3-col adaptive grid)
+│   ├── Analytics.tsx              # Stats (2-col mobile → 4-col desktop)
+│   ├── History.tsx                # Cards (1 → 2 → 3 columns)
+│   ├── Compare.tsx                # 2-up comparison (stacks on mobile)
+│   ├── Settings.tsx
+│   ├── Auth.tsx
+│   └── Onboarding.tsx
+├── hooks/
+│   ├── useAuth.tsx
+│   └── useLiveRecorder.tsx
+├── lib/
+│   ├── exporters.ts               # MIDI / PDF / CSV / MusicXML / PNG
+│   └── audioUtils.ts
+└── integrations/supabase/         # Auto-generated client
+supabase/
+└── functions/analyze-audio/       # Gemini-powered analysis edge function
 ```
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
-- 🧠 **CREPE / Basic Pitch integration** via external Python service for sub-cent pitch accuracy
-- 🎚️ **Polyphonic transcription** (multiple simultaneous instruments per track)
-- 🎼 **VexFlow rendering** for in-browser interactive sheet music (zoom, edit, replay)
-- 🥁 **Drum kit detection** and beat-grid quantization
-- 🎤 **Vocal melody extraction** with lyrics alignment via Whisper
-- 🌐 **Public sharing** of projects with embeddable players
-- 👥 **Real-time collaboration** using Supabase Realtime channels
-- 📱 **PWA / mobile app** with offline-first caching
-- 🎹 **VST/MIDI keyboard input** for live transcription scoring
-- 📊 **Evaluation suite** computing Precision, Recall, F1, onset accuracy, and cent deviation against ground-truth MIDI
-- 🎵 **Style transfer** — re-render detected notes with a different instrument timbre
-- 🌍 **Multilingual UI** (i18n)
-- 🔌 **DAW plugins** (Logic, Ableton, FL Studio export presets)
+- AI-based music recommendation system
+- Real-time streaming optimization (true WebSocket pipeline)
+- Offline caching support (PWA)
+- Advanced analytics and personalization
+- Collaborative session sharing
+- On-device pitch detection (CREPE / Basic Pitch in WASM)
 
 ---
 
-## 📜 License
+## Conclusion
 
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+Gandharva demonstrates how a unified responsive architecture can deliver a scalable, efficient, and consistent user experience across multiple platforms — without maintaining separate implementations — while combining a premium Apple-event-style aesthetic with real AI-powered audio analysis.
 
 ---
 
-<p align="center">
-  Built with ❤️ using <a href="https://lovable.dev">Lovable</a> · Powered by Lovable AI & Lovable Cloud
-</p>
+**Developed by Mohan Sriram Kunamsetty**
