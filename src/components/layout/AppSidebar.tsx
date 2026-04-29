@@ -31,20 +31,20 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { pathname } = useLocation();
   return (
     <div className="relative flex flex-col h-full w-full overflow-hidden">
-      {/* Deep navy base — matches logo background */}
+      {/* Deep midnight-blue base — matches hero & logo background */}
       <div
         className="absolute inset-0 -z-20"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 0%, #0b1430 0%, #060a1c 45%, #020617 100%)",
+            "linear-gradient(180deg, #07102a 0%, #050a1f 45%, #02060f 100%)",
         }}
       />
-      {/* Divine golden ambient bloom */}
+      {/* Subtle ambient warmth — no spotlight, just atmosphere */}
       <div
         className="absolute inset-0 -z-10 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at 50% 12%, hsl(var(--gold-glow) / 0.18) 0%, transparent 38%), radial-gradient(circle at 50% 92%, hsl(var(--gold) / 0.10) 0%, transparent 45%)",
+            "radial-gradient(circle at 50% 95%, hsl(var(--gold) / 0.08) 0%, transparent 50%)",
         }}
       />
       {/* Cinematic vignette */}
@@ -91,8 +91,8 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       </div>
 
       {/* Engraved gold double border */}
-      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/45 shadow-[inset_0_0_30px_hsl(var(--gold)/0.08)]" />
-      <div className="pointer-events-none absolute inset-[10px] rounded-2xl border border-gold/15" />
+      <div className="pointer-events-none absolute inset-2 rounded-2xl border border-gold/35 shadow-[inset_0_0_24px_hsl(var(--gold)/0.05)]" />
+      <div className="pointer-events-none absolute inset-[10px] rounded-2xl border border-gold/12" />
 
       {/* Ornamental corners */}
       <GoldCorner className="absolute top-1.5 left-1.5" />
@@ -101,45 +101,38 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
       <GoldCorner className="absolute bottom-1.5 right-1.5 rotate-180" />
 
       {/* Logo — uses uploaded artwork as primary identity */}
-      <div className="relative z-10 pt-9 pb-5 px-6 text-center">
+      <div className="relative z-10 pt-10 pb-4 px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: -10, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
-          className="relative mx-auto w-[120px] h-[120px] flex items-center justify-center"
+          className="relative mx-auto w-[140px] h-[140px] flex items-center justify-center"
         >
-          {/* Divine radial aura behind logo */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, hsl(var(--gold-glow) / 0.45) 0%, hsl(var(--gold) / 0.18) 35%, transparent 70%)",
-              filter: "blur(6px)",
-            }}
-            animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.06, 1] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
+          {/* No aura, no spotlight — logo blends directly into sidebar bg */}
           <img
             src={logoImg}
             alt="Gandharva"
-            className="relative z-10 w-[112px] h-[112px] object-contain drop-shadow-[0_0_18px_hsl(var(--gold-glow)/0.55)]"
+            className="relative z-10 w-[140px] h-[140px] object-contain"
             style={{
+              // Soft fade to blend square logo edges into sidebar bg
               maskImage:
-                "radial-gradient(circle at 50% 45%, black 62%, transparent 78%)",
+                "radial-gradient(ellipse at 50% 50%, black 55%, transparent 88%)",
               WebkitMaskImage:
-                "radial-gradient(circle at 50% 45%, black 62%, transparent 78%)",
+                "radial-gradient(ellipse at 50% 50%, black 55%, transparent 88%)",
+              mixBlendMode: "screen",
+              filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.6))",
             }}
           />
         </motion.div>
         <h1
-          className="font-cinzel text-[22px] tracking-[0.32em] mt-2 font-semibold"
+          className="font-cinzel text-[22px] tracking-[0.32em] -mt-2 font-semibold"
           style={{
             background:
-              "linear-gradient(180deg, #F6C453 0%, #D4AF37 55%, #B8902B 100%)",
+              "linear-gradient(180deg, #F4D27A 0%, #D4AF37 55%, #9c7a25 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            filter: "drop-shadow(0 0 10px hsl(var(--gold-glow) / 0.45))",
+            filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.6))",
           }}
         >
           GANDHARVA
