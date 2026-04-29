@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-gandharva.png";
 import HeroButtons from "@/components/HeroButtons";
+import HeroFeatureIcons from "@/components/HeroFeatureIcons";
 
 const HeroSection = () => {
   return (
@@ -43,7 +44,7 @@ const HeroSection = () => {
       </div>
 
       {/* Hero overlay content (mobile/tablet only — desktop relies on the artwork itself) */}
-      <div className="relative z-10 h-full w-full flex flex-col justify-end lg:justify-center px-6 sm:px-10 pb-16 lg:pb-0 lg:pl-12 xl:pl-16 max-w-2xl">
+      <div className="relative z-10 h-full w-full flex flex-col justify-end lg:justify-center px-6 sm:px-10 pb-40 sm:pb-44 lg:pb-0 lg:pl-12 xl:pl-16 max-w-2xl">
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,6 +76,13 @@ const HeroSection = () => {
         >
           <HeroButtons />
         </motion.div>
+      </div>
+
+      {/* Bottom feature icon rail — medium size, ornate gold rings */}
+      <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
+        <div className="mx-auto max-w-3xl rounded-2xl bg-black/35 backdrop-blur-sm border border-gold/25 px-4 sm:px-6 py-3 sm:py-4 shadow-[0_0_30px_hsl(var(--gold)/0.18)]">
+          <HeroFeatureIcons />
+        </div>
       </div>
     </section>
   );

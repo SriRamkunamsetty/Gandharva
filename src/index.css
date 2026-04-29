@@ -130,6 +130,20 @@
     height: 0;
   }
 
+  /* Sidebar-wide scrollbar removal — applies to ANY overflow container inside sidebar */
+  aside,
+  aside * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  aside::-webkit-scrollbar,
+  aside *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
   .gradient-hero {
     background: var(--gradient-hero);
   }

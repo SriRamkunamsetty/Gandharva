@@ -55,9 +55,14 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
             "radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%)",
         }}
       />
-      {/* Floating shimmer particles */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        {Array.from({ length: 14 }).map((_, i) => (
+      {/* Floating shimmer particles — capped count, GPU-friendly transforms,
+          paused when the tab is offscreen via Framer Motion's automatic
+          requestAnimationFrame throttling. */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        style={{ contain: "layout paint", willChange: "transform" }}
+      >
+        {Array.from({ length: 8 }).map((_, i) => (
           <motion.span
             key={i}
             className="absolute rounded-full"
@@ -69,13 +74,14 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
               background: "hsl(var(--gold-glow))",
               boxShadow: "0 0 8px hsl(var(--gold-glow) / 0.9)",
               opacity: 0.55,
+              willChange: "transform, opacity",
             }}
             animate={{
-              y: [0, -14, 0],
+              transform: ["translateY(0px)", "translateY(-14px)", "translateY(0px)"],
               opacity: [0.25, 0.85, 0.25],
             }}
             transition={{
-              duration: 6 + (i % 5),
+              duration: 8 + (i % 5),
               repeat: Infinity,
               delay: i * 0.4,
               ease: "easeInOut",
