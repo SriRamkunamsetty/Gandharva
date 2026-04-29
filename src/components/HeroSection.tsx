@@ -1,7 +1,7 @@
-import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-gandharva.png";
 import HeroButtons from "@/components/HeroButtons";
 import HeroFeatureIcons from "@/components/HeroFeatureIcons";
+import { motion } from "framer-motion";
 
 const HeroSection = () => {
   return (
@@ -17,34 +17,11 @@ const HeroSection = () => {
         aria-label="Gandharva — Hear the music of the gods"
       />
 
-      {/* Subtle readability gradient (only on small screens where overlay text matters) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent lg:from-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-      {/* Floating gold particles */}
-      <div className="pointer-events-none absolute inset-0">
-        {Array.from({ length: 14 }).map((_, i) => (
-          <motion.span
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-gold-glow/70"
-            style={{
-              left: `${(i * 73) % 100}%`,
-              top: `${(i * 41) % 100}%`,
-              boxShadow: "0 0 8px hsl(var(--gold-glow))",
-            }}
-            animate={{ y: [0, -30, 0], opacity: [0.2, 0.9, 0.2] }}
-            transition={{
-              duration: 6 + (i % 5),
-              repeat: Infinity,
-              delay: i * 0.4,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
+      {/* Very light readability gradient — keep mythological artwork dominant */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-transparent lg:from-black/25" />
 
       {/* Hero overlay content (mobile/tablet only — desktop relies on the artwork itself) */}
-      <div className="relative z-10 h-full w-full flex flex-col justify-end lg:justify-center px-6 sm:px-10 pb-40 sm:pb-44 lg:pb-0 lg:pl-12 xl:pl-16 max-w-2xl">
+      <div className="relative z-10 h-full w-full flex flex-col justify-end lg:justify-center px-6 sm:px-10 pb-32 sm:pb-36 lg:pb-0 lg:pl-12 xl:pl-16 max-w-2xl">
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -78,9 +55,9 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* Bottom feature icon rail — medium size, ornate gold rings */}
-      <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
-        <div className="mx-auto max-w-3xl rounded-2xl bg-black/35 backdrop-blur-sm border border-gold/25 px-4 sm:px-6 py-3 sm:py-4 shadow-[0_0_30px_hsl(var(--gold)/0.18)]">
+      {/* Bottom feature icon rail — direct, no glass card */}
+      <div className="absolute bottom-8 sm:bottom-10 left-0 right-0 z-10 px-6 sm:px-10 lg:pl-12 xl:pl-16">
+        <div className="max-w-2xl">
           <HeroFeatureIcons />
         </div>
       </div>

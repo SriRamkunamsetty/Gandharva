@@ -37,7 +37,7 @@ const OrnateRing = () => (
 
 const HeroFeatureIcons = () => {
   return (
-    <div className="flex items-end justify-center gap-5 sm:gap-7 md:gap-9">
+    <div className="flex items-end justify-start gap-6 sm:gap-8 md:gap-10">
       {ITEMS.map(({ Icon, title, subtitle }, i) => (
         <motion.div
           key={title}
@@ -46,22 +46,28 @@ const HeroFeatureIcons = () => {
           transition={{ duration: 0.6, delay: 0.1 * i + 0.2 }}
           className="flex flex-col items-center text-center select-none"
         >
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center group">
-            <OrnateRing />
-            {/* soft inner glow */}
+          <div className="relative w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center group">
+            {/* Circular gold engraved frame */}
             <span
-              className="absolute inset-2 rounded-full"
+              className="absolute inset-0 rounded-full border border-gold/70"
               style={{
-                background:
-                  "radial-gradient(circle, hsl(var(--gold-glow) / 0.18) 0%, transparent 70%)",
+                boxShadow:
+                  "inset 0 0 8px hsl(var(--gold)/0.25), 0 0 10px hsl(var(--gold)/0.18)",
               }}
             />
-            <Icon className="relative h-5 w-5 sm:h-6 sm:w-6 text-gold-glow drop-shadow-[0_0_6px_hsl(var(--gold-glow)/0.7)] transition-transform duration-300 group-hover:scale-110" />
+            <span className="absolute inset-[3px] rounded-full border border-gold/25" />
+            <Icon className="relative h-[18px] w-[18px] sm:h-5 sm:w-5 text-gold-glow drop-shadow-[0_0_5px_hsl(var(--gold-glow)/0.6)] transition-transform duration-300 group-hover:scale-110" />
           </div>
-          <span className="mt-2 font-cinzel text-[11px] sm:text-xs tracking-[0.18em] uppercase text-gold-glow">
+          <span
+            className="mt-2.5 font-cinzel text-[11px] sm:text-[12px] tracking-[0.14em] text-gold-glow"
+            style={{ textShadow: "0 1px 3px rgba(0,0,0,0.7)" }}
+          >
             {title}
           </span>
-          <span className="text-[10px] sm:text-[11px] text-cream/65 tracking-wide">
+          <span
+            className="text-[10px] sm:text-[11px] text-cream/70 tracking-wide"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.7)" }}
+          >
             {subtitle}
           </span>
         </motion.div>
