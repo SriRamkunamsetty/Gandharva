@@ -1,0 +1,209 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Music, Clock, Download, FileText, FileSpreadsheet, FileMusic, FileImage, FileCode2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportNotesAsCSV, exportNotesAsMIDI, exportAnalysisAsPDF, exportNotesAsMusicXML, exportNotesAsPNG } from "@/lib/exporters";
+import { toast } from "sonner";
+
+interface Note {
+  note: string;
+  start: number;
+  end: number;
+  frequency: number;
+}
+
+interface NotesPanelProps {
+  notes: Note[];
+  isAnalyzing: boolean;
+  fileName?: string | null;
+  instrument?: string | null;
+  confidence?: number;
+}
+
+const PIANO_KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+const NotesPanel = ({ notes, isAnalyzing, fileName, instrument, confidence }: NotesPanelProps) => {
+  const baseName = (fileName?.replace(/\.[^.]+$/, "") || "gandharva-notes");
+  const [watermark, setWatermark] = useState(true);
+  const handleExport = (kind: "midi" | "csv" | "pdf" | "musicxml" | "png") => {
+    if (!notes.length) return;
+    const wm = { enabled: watermark, includeTimestamp: true };
+    try {
+      if (kind === "midi") exportNotesAsMIDI(notes, baseName, wm);
+      else if (kind === "csv") exportNotesAsCSV(notes, baseName, wm);
+      else if (kind === "pdf") exportAnalysisAsPDF({ title: baseName, instrument: instrument ?? null, confidence: confidence ?? 0, fileName }, notes, baseName, wm);
+      else if (kind === "musicxml") exportNotesAsMusicXML(notes, { title: baseName, instrument }, baseName, wm);
+      else exportNotesAsPNG(notes, { title: baseName, instrument, confidence }, baseName, wm);
+      toast.success(`${kind.toUpperCase()} exported`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Export failed");
+    }
+  };
+  return (
+    <div className="space-y-5">
+      {/* Detected Notes */}
+      <div className="glass-card glass-card-hover p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/15 border border-primary/20">
+              <Music className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <h3 className="panel-heading text-sm">Detected Notes</h3>
+          </div>
+          {notes.length > 0 && (
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-0.5 rounded-full bg-white/5">
+              {notes.length}
+            </span>
+          )}
+        </div>
+        {notes.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">
+            {isAnalyzing ? "Analyzing audio…" : "No notes detected yet"}
+          </p>
+        ) : (
+          <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1 -mr-1">
+            {notes.map((n, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/30 hover:bg-primary/5 transition-colors text-sm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="h-7 w-7 rounded-lg bg-primary/15 border border-primary/20 flex items-center justify-center font-display text-[11px] text-primary font-semibold">
+                    {n.note}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground tabular-nums">
+                    {n.frequency.toFixed(1)} Hz
+                  </span>
+                </div>
+                <span className="text-[11px] text-muted-foreground tabular-nums">
+                  {n.start.toFixed(2)}–{n.end.toFixed(2)}s
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Timeline */}
+      <div className="glass-card glass-card-hover p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-violet/15 border border-violet/20">
+            <Clock className="h-3.5 w-3.5 text-violet" />
+          </div>
+          <h3 className="panel-heading text-sm">Piano Roll</h3>
+        </div>
+        {notes.length > 0 ? (
+          <div className="relative h-24 rounded-xl bg-black/20 border border-white/5 p-2 overflow-hidden">
+            {/* Mini piano roll */}
+            {notes.map((n, i) => {
+              const maxEnd = Math.max(...notes.map((x) => x.end), 1);
+              const left = (n.start / maxEnd) * 100;
+              const width = Math.max(((n.end - n.start) / maxEnd) * 100, 2);
+              const noteIdx = PIANO_KEYS.indexOf(n.note.replace(/[0-9]/g, ""));
+              const top = ((11 - noteIdx) / 12) * 100;
+
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute h-2.5 rounded-md origin-left"
+                  style={{
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    top: `${top * 0.8}%`,
+                    background: `linear-gradient(90deg, hsl(180,100%,55%), hsl(270,80%,65%))`,
+                    boxShadow: "0 0 12px hsl(var(--primary) / 0.4)",
+                    opacity: 0.9,
+                  }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="h-24 flex items-center justify-center rounded-xl bg-black/20 border border-white/5">
+            <p className="text-xs text-muted-foreground">
+              Notes will appear here
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Export */}
+      <div className="glass-card glass-card-hover p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-primary/15 border border-primary/20">
+            <Download className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <h3 className="panel-heading text-sm">Export</h3>
+        </div>
+
+        {/* Watermark toggle */}
+        <button
+          type="button"
+          onClick={() => setWatermark((w) => !w)}
+          className={`group w-full flex items-center justify-between gap-2 mb-3 px-3 py-2.5 rounded-xl border transition-colors ${
+            watermark
+              ? "bg-primary/10 border-primary/30 hover:border-primary/50"
+              : "bg-white/[0.02] border-white/5 hover:border-white/15"
+          }`}
+          aria-pressed={watermark}
+        >
+          <span className="flex items-center gap-2 min-w-0">
+            <Sparkles className={`h-3.5 w-3.5 shrink-0 ${watermark ? "text-primary" : "text-muted-foreground"}`} />
+            <span className="text-left min-w-0">
+              <span className="block text-[11px] font-medium text-foreground truncate">
+                Brand watermark
+              </span>
+              <span className="block text-[10px] text-muted-foreground truncate">
+                Developed by Mohan Sriram Kunamsetty
+              </span>
+            </span>
+          </span>
+          <span
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${
+              watermark ? "bg-primary/70" : "bg-white/10"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                watermark ? "translate-x-4" : "translate-x-0.5"
+              }`}
+            />
+          </span>
+        </button>
+
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { kind: "midi" as const, label: "MIDI File", ext: ".mid", Icon: FileMusic },
+            { kind: "pdf" as const, label: "PDF Report", ext: ".pdf", Icon: FileText },
+            { kind: "csv" as const, label: "CSV Notes", ext: ".csv", Icon: FileSpreadsheet },
+            { kind: "musicxml" as const, label: "MusicXML", ext: ".musicxml", Icon: FileCode2 },
+            { kind: "png" as const, label: "Sheet PNG", ext: ".png", Icon: FileImage },
+          ].map(({ kind, label, ext, Icon }) => (
+            <Button
+              key={kind}
+              variant="glass"
+              size="sm"
+              onClick={() => handleExport(kind)}
+              className="justify-between text-xs rounded-xl h-10 border border-white/5 hover:border-primary/30"
+              disabled={notes.length === 0}
+            >
+              <span className="flex items-center gap-2">
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </span>
+              <span className="text-[10px] text-muted-foreground">{ext}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NotesPanel;
